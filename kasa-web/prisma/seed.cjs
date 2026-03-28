@@ -74,7 +74,7 @@ const PROBLEMS = [
     category: "water_sanitation",
     subcategory: "no_water",
     region: "Ashanti",
-    district: "Kumasi Metropolitan",
+    district: "Kumasi",
     description:
       "The borehole has been dry for four days and residents are queueing at a vendor 30 minutes away. School cooks are buying sachets to keep classes running.",
     status: ProblemStatus.PENDING_VERIFICATION,
@@ -89,7 +89,7 @@ const PROBLEMS = [
     category: "utilities",
     subcategory: "power_outage",
     region: "Northern",
-    district: "Tamale North",
+    district: "Tamale Metropolitan",
     description:
       "Power cuts are happening every evening between 6pm and 10pm, shutting down cold stores and charging stations along the main road.",
     status: ProblemStatus.PENDING_VERIFICATION,
@@ -104,7 +104,7 @@ const PROBLEMS = [
     category: "health",
     subcategory: "clinic_access",
     region: "Central",
-    district: "Cape Coast Metro",
+    district: "Cape Coast",
     description:
       "The clinic gate is locked after hours and pregnant patients are redirected to a private pharmacy for basic care. The queue spills onto the road.",
     status: ProblemStatus.COMMUNITY_VERIFIED,
@@ -117,7 +117,7 @@ const PROBLEMS = [
     category: "water_sanitation",
     subcategory: "open_gutter",
     region: "Western",
-    district: "Sekondi-Takoradi",
+    district: "Sekondi Takoradi Metropolitan",
     description:
       "A blocked drain is overflowing onto the footpath. After light rain the road becomes impassable and nearby kiosks are taking in water.",
     status: ProblemStatus.PENDING_VERIFICATION,
@@ -130,7 +130,7 @@ const PROBLEMS = [
     category: "roads_transport",
     subcategory: "broken_streetlight",
     region: "Bono",
-    district: "Sunyani West",
+    district: "Sunyani",
     description:
       "The streetlight by the lorry station has been out for weeks and drivers are using the shoulder as a parking lane at night.",
     status: ProblemStatus.PENDING_VERIFICATION,
@@ -169,7 +169,7 @@ const PROBLEMS = [
     category: "utilities",
     subcategory: "internet",
     region: "Eastern",
-    district: "Koforidua",
+    district: "New Juaben South",
     description:
       "Mobile internet drops repeatedly during office hours, and the only available hotspot is overloaded in the evening.",
     status: ProblemStatus.PENDING_VERIFICATION,
@@ -182,7 +182,7 @@ const PROBLEMS = [
     category: "governance",
     subcategory: "public_safety",
     region: "Bono East",
-    district: "Techiman North",
+    district: "Techiman",
     description:
       "Traders are asking for patrols after repeated thefts near the lorry park. The market committee keeps filing reports with no reply.",
     status: ProblemStatus.COMMUNITY_VERIFIED,
@@ -194,7 +194,7 @@ const PROBLEMS = [
     id: `${DEMO_PREFIX}berekum-general`,
     category: "other",
     subcategory: "general",
-    region: "Bono East",
+    region: "Bono",
     district: "Berekum East",
     description:
       "Residents want a clear channel for reporting small municipal issues like broken bins, overgrown shoulders, and missed collections.",

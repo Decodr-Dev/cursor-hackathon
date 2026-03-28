@@ -1,6 +1,11 @@
+import { getAllDistrictOptions } from "@/lib/ghana-admin";
+
 export type FeedArea = {
   district: string;
   region: string;
+};
+
+type GeoFeedArea = FeedArea & {
   latitude: number;
   longitude: number;
 };
@@ -8,7 +13,7 @@ export type FeedArea = {
 export const FEED_LOCATION_STORAGE_KEY = "kasa.feed.location.v1";
 export const FEED_AUTO_LOCATION_ATTEMPT_KEY = "kasa.feed.location.auto-attempted";
 
-export const FEED_AREAS: FeedArea[] = [
+const GEO_FEED_AREAS: GeoFeedArea[] = [
   {
     district: "La Nkwantanang-Madina",
     region: "Greater Accra",
@@ -16,31 +21,31 @@ export const FEED_AREAS: FeedArea[] = [
     longitude: -0.1645,
   },
   {
-    district: "Kumasi Metropolitan",
+    district: "Kumasi",
     region: "Ashanti",
     latitude: 6.6885,
     longitude: -1.6244,
   },
   {
-    district: "Tamale North",
+    district: "Tamale Metropolitan",
     region: "Northern",
     latitude: 9.4034,
     longitude: -0.8422,
   },
   {
-    district: "Cape Coast Metro",
+    district: "Cape Coast",
     region: "Central",
     latitude: 5.1053,
     longitude: -1.2466,
   },
   {
-    district: "Sekondi-Takoradi",
+    district: "Sekondi Takoradi Metropolitan",
     region: "Western",
     latitude: 4.9031,
     longitude: -1.7554,
   },
   {
-    district: "Sunyani West",
+    district: "Sunyani",
     region: "Bono",
     latitude: 7.3349,
     longitude: -2.3211,
@@ -58,22 +63,52 @@ export const FEED_AREAS: FeedArea[] = [
     longitude: -2.5099,
   },
   {
-    district: "Koforidua",
+    district: "New Juaben South",
     region: "Eastern",
     latitude: 6.0941,
     longitude: -0.2591,
   },
   {
-    district: "Techiman North",
+    district: "Techiman",
     region: "Bono East",
     latitude: 7.5906,
     longitude: -1.9385,
   },
   {
-    district: "Berekum East",
-    region: "Bono East",
-    latitude: 7.4534,
-    longitude: -2.5841,
+    district: "Asunafo North",
+    region: "Ahafo",
+    latitude: 6.8041,
+    longitude: -2.5174,
+  },
+  {
+    district: "East Mamprusi",
+    region: "North East",
+    latitude: 10.527,
+    longitude: -0.3697,
+  },
+  {
+    district: "Krachi East",
+    region: "Oti",
+    latitude: 8.0653,
+    longitude: -0.0686,
+  },
+  {
+    district: "West Gonja",
+    region: "Savannah",
+    latitude: 9.0827,
+    longitude: -1.8184,
+  },
+  {
+    district: "Bolgatanga Municipal",
+    region: "Upper East",
+    latitude: 10.7856,
+    longitude: -0.8514,
+  },
+  {
+    district: "Sefwi-Wiawso",
+    region: "Western North",
+    latitude: 6.2053,
+    longitude: -2.4892,
   },
 ];
 
@@ -92,24 +127,26 @@ export function locationLabelForFeed(input: {
 
 export function groupFeedAreasByRegion() {
   const map = new Map<string, FeedArea[]>();
-  for (const area of FEED_AREAS) {
-    const rows = map.get(area.region) ?? [];
-    rows.push(area);
-    map.set(area.region, rows);
+  for (const option of getAllDistrictOptions()) {
+    const rows = map.get(option.region) ?? [];
+    rows.push(option);
+    map.set(option.region, rows);
   }
-  return [...map.entries()].map(([region, areas]) => ({
+  return [...map.entries()]
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([region, areas]) => ({
     region,
     areas: [...areas].sort((a, b) => a.district.localeCompare(b.district)),
-  }));
+    }));
 }
 
 export function findNearestFeedArea(
   latitude: number,
   longitude: number,
 ): FeedArea | null {
-  let best: FeedArea | null = null;
+  let best: GeoFeedArea | null = null;
   let bestDistance = Number.POSITIVE_INFINITY;
-  for (const area of FEED_AREAS) {
+  for (const area of GEO_FEED_AREAS) {
     const distance = haversineKm(
       latitude,
       longitude,
@@ -121,7 +158,7 @@ export function findNearestFeedArea(
       bestDistance = distance;
     }
   }
-  return best;
+  return best ? { district: best.district, region: best.region } : null;
 }
 
 function haversineKm(

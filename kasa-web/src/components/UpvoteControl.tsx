@@ -2,7 +2,6 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { READ_ONLY_DEMO_MESSAGE } from "@/lib/demo-mode";
 
 type Props = {
   problemId: string;
@@ -70,7 +69,7 @@ export function UpvoteControl({ problemId, count, hasUpvoted }: Props) {
       )}
       <p className="w-full text-xs text-[var(--kasa-muted)]">
         {readOnlyDemo
-          ? READ_ONLY_DEMO_MESSAGE
+          ? "Voting stays off on the public demo."
           : "Demo: one vote per report on this browser (cookie), until real sign-in ships."}
       </p>
     </div>

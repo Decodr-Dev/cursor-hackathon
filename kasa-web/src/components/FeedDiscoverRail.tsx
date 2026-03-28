@@ -1,3 +1,5 @@
+"use client";
+
 import Link from "next/link";
 import { PROBLEM_CATEGORIES } from "@/lib/categories";
 import { feedPathHref, type FeedSearchState } from "@/lib/feed-url";

@@ -5,9 +5,17 @@ import { formatRelativeTime } from "@/lib/format-relative-time";
 import { daysOpenSince, demoSeverityScore, severityStyle } from "@/lib/civic-metrics";
 import type { ProblemListRow } from "@/server/problem-service";
 import { ShareProblemButton } from "@/components/ShareProblemButton";
+import { ProblemProgressBadge } from "@/components/ProblemProgressBadge";
 import { StatusBadge } from "@/components/StatusBadge";
+import type { ProblemProgressStage } from "@/lib/problem-progress";
 
-export function ProblemPostCard({ problem }: { problem: ProblemListRow }) {
+export function ProblemPostCard({
+  problem,
+  progressStage,
+}: {
+  problem: ProblemListRow;
+  progressStage: ProblemProgressStage;
+}) {
   const thumb = problem.evidence[0];
   const showPhoto = thumb?.type === "photo";
   const poster = `Reporter · ${problem.district}`;
@@ -112,6 +120,7 @@ export function ProblemPostCard({ problem }: { problem: ProblemListRow }) {
 
       <div className="mt-2 flex flex-wrap gap-2">
         <StatusBadge status={problem.status} />
+        <ProblemProgressBadge stage={progressStage} />
       </div>
     </article>
   );

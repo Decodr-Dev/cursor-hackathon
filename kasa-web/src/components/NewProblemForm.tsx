@@ -3,25 +3,31 @@
 import { useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import { PROBLEM_CATEGORIES } from "@/lib/categories";
-import { READ_ONLY_DEMO_MESSAGE } from "@/lib/demo-mode";
-import { GHANA_REGIONS } from "@/lib/regions";
+import { NewProblemLocationSection } from "@/components/NewProblemLocationSection";
+
+const PUBLIC_DEMO_SUBMIT_MESSAGE = "Submissions are off on the public demo.";
 
 export function NewProblemForm() {
   const readOnlyDemo = process.env.NEXT_PUBLIC_KASA_READ_ONLY === "1";
   const router = useRouter();
   const [category, setCategory] = useState(PROBLEM_CATEGORIES[0].slug);
+  const [region, setRegion] = useState("Greater Accra");
+  const [district, setDistrict] = useState("La-Nkwantanang-Madina");
+  const [constituency, setConstituency] = useState("");
+  const [latitude, setLatitude] = useState("");
+  const [longitude, setLongitude] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [pending, setPending] = useState(false);
 
-  const subs = useMemo(() => {
+  const subcategories = useMemo(() => {
     const current = PROBLEM_CATEGORIES.find((item) => item.slug === category);
     return current?.subcategories ?? [];
   }, [category]);
 
-  const submitLabel = readOnlyDemo
-    ? "Public demo is read-only"
-    : pending
-      ? "Submitting..."
+  const submitLabel = pending
+    ? "Submitting..."
+    : readOnlyDemo
+      ? "Preview only"
       : "Submit report";
 
   return (
@@ -32,7 +38,7 @@ export function NewProblemForm() {
         setError(null);
 
         if (readOnlyDemo) {
-          setError(READ_ONLY_DEMO_MESSAGE);
+          setError(PUBLIC_DEMO_SUBMIT_MESSAGE);
           return;
         }
 
@@ -69,29 +75,36 @@ export function NewProblemForm() {
         }
       }}
     >
-      {readOnlyDemo ? (
-        <div
-          role="status"
-          className="rounded-2xl border border-[var(--kasa-gold)]/45 bg-[var(--kasa-gold-light)]/60 px-4 py-3 text-sm text-[var(--kasa-gold-on)]"
-        >
-          {READ_ONLY_DEMO_MESSAGE}
-        </div>
-      ) : null}
-
       {error ? (
         <div
           role="alert"
-          className="rounded-2xl border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-900 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-100"
+          className="rounded-2xl border border-[var(--kasa-divider)] bg-[var(--kasa-muted-bg)] px-4 py-3 text-sm text-[var(--kasa-text-primary)]"
         >
           {error}
         </div>
       ) : null}
 
       <fieldset
-        disabled={pending || readOnlyDemo}
+        disabled={pending}
         className="min-w-0 border-0 p-0 disabled:cursor-not-allowed disabled:opacity-80"
       >
         <div className="flex flex-col gap-5">
+          <NewProblemLocationSection
+            region={region}
+            district={district}
+            constituency={constituency}
+            latitude={latitude}
+            longitude={longitude}
+            disabled={pending}
+            onRegionChange={setRegion}
+            onDistrictChange={setDistrict}
+            onConstituencyChange={setConstituency}
+            onCoordinatesChange={(nextLatitude, nextLongitude) => {
+              setLatitude(nextLatitude);
+              setLongitude(nextLongitude);
+            }}
+          />
+
           <label className="block text-sm font-medium text-[var(--kasa-ink)]">
             Category
             <select
@@ -116,41 +129,13 @@ export function NewProblemForm() {
               defaultValue=""
             >
               <option value="">Select...</option>
-              {subs.map((item) => (
+              {subcategories.map((item) => (
                 <option key={item.slug} value={item.slug}>
                   {item.label}
                 </option>
               ))}
             </select>
           </label>
-
-          <div className="grid gap-4 sm:grid-cols-2">
-            <label className="block text-sm font-medium text-[var(--kasa-ink)]">
-              Region
-              <select
-                name="region"
-                required
-                className="mt-2 w-full rounded-2xl border border-[var(--kasa-border)] bg-[var(--kasa-surface)] px-3 py-2.5 text-[var(--kasa-ink)] outline-none focus:ring-2 focus:ring-[var(--kasa-forest)]"
-                defaultValue="Greater Accra"
-              >
-                {GHANA_REGIONS.map((region) => (
-                  <option key={region} value={region}>
-                    {region}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="block text-sm font-medium text-[var(--kasa-ink)]">
-              District / area
-              <input
-                name="district"
-                required
-                placeholder="e.g. La-Nkwantanang"
-                className="mt-2 w-full rounded-2xl border border-[var(--kasa-border)] bg-[var(--kasa-surface)] px-3 py-2.5 text-[var(--kasa-ink)] outline-none placeholder:text-[var(--kasa-muted)] focus:ring-2 focus:ring-[var(--kasa-forest)]"
-              />
-            </label>
-          </div>
 
           <label className="block text-sm font-medium text-[var(--kasa-ink)]">
             What is happening?
@@ -159,58 +144,46 @@ export function NewProblemForm() {
               required
               rows={6}
               maxLength={2000}
-              placeholder="Describe the problem clearly. In the full product, AI will suggest a category while you type."
+              placeholder="Describe the problem clearly so nearby residents can understand what is wrong, where it is, and how urgent it feels."
               className="mt-2 w-full rounded-2xl border border-[var(--kasa-border)] bg-[var(--kasa-surface)] px-3 py-2.5 text-[var(--kasa-ink)] outline-none placeholder:text-[var(--kasa-muted)] focus:ring-2 focus:ring-[var(--kasa-forest)]"
             />
             <span className="mt-1 block text-xs text-[var(--kasa-muted)]">
-              Up to 2,000 characters (matches the PRD cap).
+              Up to 2,000 characters.
             </span>
           </label>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <label className="block text-sm font-medium text-[var(--kasa-ink)]">
-              Latitude (optional)
+              Take photo
               <input
-                name="latitude"
-                inputMode="decimal"
-                placeholder="e.g. 5.6037"
-                className="mt-2 w-full rounded-2xl border border-[var(--kasa-border)] bg-[var(--kasa-surface)] px-3 py-2.5 text-[var(--kasa-ink)] outline-none placeholder:text-[var(--kasa-muted)] focus:ring-2 focus:ring-[var(--kasa-forest)]"
+                name="evidenceCamera"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                capture="environment"
+                className="mt-2 block w-full text-sm text-[var(--kasa-muted)] file:mr-3 file:rounded-full file:border-0 file:bg-[var(--kasa-wash)] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-[var(--kasa-ink)]"
               />
+              <span className="mt-1 block text-xs text-[var(--kasa-muted)]">
+                Opens the camera on supported phones.
+              </span>
             </label>
 
             <label className="block text-sm font-medium text-[var(--kasa-ink)]">
-              Longitude (optional)
+              Attach file
               <input
-                name="longitude"
-                inputMode="decimal"
-                placeholder="e.g. -0.1870"
-                className="mt-2 w-full rounded-2xl border border-[var(--kasa-border)] bg-[var(--kasa-surface)] px-3 py-2.5 text-[var(--kasa-ink)] outline-none placeholder:text-[var(--kasa-muted)] focus:ring-2 focus:ring-[var(--kasa-forest)]"
+                name="evidenceFile"
+                type="file"
+                accept="image/jpeg,image/png,image/webp,application/pdf"
+                className="mt-2 block w-full text-sm text-[var(--kasa-muted)] file:mr-3 file:rounded-full file:border-0 file:bg-[var(--kasa-wash)] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-[var(--kasa-ink)]"
               />
+              <span className="mt-1 block text-xs text-[var(--kasa-muted)]">
+                Image or PDF, max 5MB.
+              </span>
             </label>
           </div>
 
-          <p className="-mt-2 text-xs text-[var(--kasa-muted)]">
-            Real Kasa will confirm GPS from your photo. For this demo you can
-            paste coordinates or leave both blank.
-          </p>
-
-          <label className="block text-sm font-medium text-[var(--kasa-ink)]">
-            Evidence (optional for demo)
-            <input
-              name="evidence"
-              type="file"
-              accept="image/jpeg,image/png,image/webp,application/pdf"
-              className="mt-2 block w-full text-sm text-[var(--kasa-muted)] file:mr-3 file:rounded-full file:border-0 file:bg-[var(--kasa-wash)] file:px-4 file:py-2 file:text-sm file:font-semibold file:text-[var(--kasa-ink)]"
-            />
-            <span className="mt-1 block text-xs text-[var(--kasa-muted)]">
-              JPEG, PNG, WebP, or PDF - max 5MB - stored locally for the
-              hackathon only.
-            </span>
-          </label>
-
           <button
             type="submit"
-            disabled={pending || readOnlyDemo}
+            disabled={pending}
             className="rounded-full bg-[var(--kasa-forest)] px-5 py-3 text-sm font-semibold text-white shadow-md hover:brightness-110 disabled:opacity-50"
           >
             {submitLabel}

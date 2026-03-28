@@ -5,10 +5,14 @@ import { usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { AppTopBar, type StackProps } from "@/components/AppTopBar";
 import { FeedAutoLocation } from "@/components/FeedAutoLocation";
+import { FeedFiltersSheet } from "@/components/FeedFiltersSheet";
 import { LocationSheet } from "@/components/LocationSheet";
 import { MobileDock } from "@/components/MobileDock";
-import { READ_ONLY_DEMO_MESSAGE } from "@/lib/demo-mode";
+import { NotificationsSheet } from "@/components/NotificationsSheet";
+import type { FeedSearchState } from "@/lib/feed-url";
 import { locationLabelForFeed } from "@/lib/location";
+
+const FEED_SORTS = new Set(["for_you", "latest", "most_upvoted", "most_severe"]);
 
 function stackBarFor(pathname: string): StackProps | null {
   if (pathname.startsWith("/problems/") && pathname !== "/problems/new") {
@@ -45,15 +49,41 @@ function isAuthRoute(pathname: string) {
   return pathname.startsWith("/login") || pathname.startsWith("/signup");
 }
 
+function parseFeedState(searchParams: ReturnType<typeof useSearchParams>): FeedSearchState {
+  const sortRaw = searchParams.get("sort") ?? "latest";
+  const sort = FEED_SORTS.has(sortRaw) ? (sortRaw as FeedSearchState["sort"]) : "latest";
+  const statusRaw = searchParams.get("status") ?? "all";
+  const status =
+    statusRaw === "pending" || statusRaw === "verified" ? statusRaw : "all";
+
+  return {
+    sort,
+    category: searchParams.get("category")?.trim() ?? "",
+    status,
+    q: searchParams.get("q") ?? "",
+    district: searchParams.get("district")?.trim() ?? "",
+    region: searchParams.get("region")?.trim() ?? "",
+  };
+}
+
 function ChromeInner({ children }: { children: React.ReactNode }) {
-  const readOnlyDemo = process.env.NEXT_PUBLIC_KASA_READ_ONLY === "1";
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const [locOpen, setLocOpen] = useState(false);
+  const routeKey = `${pathname}?${searchParams.toString()}`;
+  const [openPanel, setOpenPanel] = useState<{
+    kind: null | "location" | "filters" | "notifications";
+    routeKey: string;
+  }>({
+    kind: null,
+    routeKey,
+  });
   const district = searchParams.get("district")?.trim() ?? "";
   const region = searchParams.get("region")?.trim() ?? "";
   const locationLabel = locationLabelForFeed({ district, region });
   const authRoute = isAuthRoute(pathname);
+  const feedRoute = pathname === "/";
+  const feedState = parseFeedState(searchParams);
+  const panelKind = openPanel.routeKey === routeKey ? openPanel.kind : null;
 
   const stack = pathname === "/" ? null : stackBarFor(pathname);
 
@@ -66,17 +96,33 @@ function ChromeInner({ children }: { children: React.ReactNode }) {
         <AppTopBar
           variant="feed"
           locationLabel={locationLabel}
-          onLocationClick={() => setLocOpen(true)}
+          onLocationClick={() => setOpenPanel({ kind: "location", routeKey })}
+          onFiltersClick={() => setOpenPanel({ kind: "filters", routeKey })}
+          onNotificationsClick={() =>
+            setOpenPanel({ kind: "notifications", routeKey })
+          }
           notifyCount={0}
         />
       )}
       {!authRoute ? (
-        <LocationSheet open={locOpen} onClose={() => setLocOpen(false)} />
+        <LocationSheet
+          open={panelKind === "location"}
+          onClose={() => setOpenPanel({ kind: null, routeKey })}
+        />
       ) : null}
-      {readOnlyDemo ? (
-        <div className="border-b border-[var(--kasa-divider)] bg-[var(--kasa-gold-light)]/85 px-3 py-2 text-center text-xs font-medium text-[var(--kasa-gold-on)]">
-          {READ_ONLY_DEMO_MESSAGE}
-        </div>
+      {feedRoute ? (
+        <FeedFiltersSheet
+          open={panelKind === "filters"}
+          onClose={() => setOpenPanel({ kind: null, routeKey })}
+          state={feedState}
+        />
+      ) : null}
+      {feedRoute ? (
+        <NotificationsSheet
+          open={panelKind === "notifications"}
+          onClose={() => setOpenPanel({ kind: null, routeKey })}
+          locationLabel={locationLabel}
+        />
       ) : null}
       <div
         className={

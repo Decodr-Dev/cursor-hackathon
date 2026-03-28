@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { getProblemProgress } from "@/server/problem-progress";
 import { getProblemById } from "@/server/problem-service";
 
 export async function GET(
@@ -10,6 +11,7 @@ export async function GET(
   if (!problem) {
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
+  const progress = await getProblemProgress(problem.id, problem.status);
   return NextResponse.json({
     data: {
       id: problem.id,
@@ -19,6 +21,7 @@ export async function GET(
       district: problem.district,
       description: problem.description,
       status: problem.status,
+      progressStage: progress.stage,
       latitude: problem.latitude,
       longitude: problem.longitude,
       createdAt: problem.createdAt.toISOString(),

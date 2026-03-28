@@ -1,3 +1,5 @@
+"use client";
+
 import type { FeedSearchState } from "@/lib/feed-url";
 
 export function FeedSearchBar({ state }: { state: FeedSearchState }) {

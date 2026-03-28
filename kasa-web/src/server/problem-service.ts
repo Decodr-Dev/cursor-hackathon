@@ -5,6 +5,8 @@ import { ProblemStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { PROBLEM_CATEGORIES } from "@/lib/categories";
 import { daysOpenSince, demoSeverityScore } from "@/lib/civic-metrics";
+import type { ProblemProgressStage } from "@/lib/problem-progress";
+import { setProblemProgressStage } from "@/server/problem-progress";
 
 const DESC_MAX = 2000;
 const UPLOAD_MAX = 5 * 1024 * 1024;
@@ -55,16 +57,90 @@ export async function listProblemsForFeed(params: {
   take?: number;
 }) {
   const take = Math.min(params.take ?? 50, 100);
+  const currentDistrict = params.district?.trim() ?? "";
+  const currentRegion = params.region?.trim() ?? "";
+
+  if (!currentDistrict) {
+    return findProblemsForScope(
+      buildFeedWhere(params, {
+        region: currentRegion || undefined,
+      }),
+      params.sort,
+      take,
+    );
+  }
+
+  const rows: Awaited<ReturnType<typeof findProblemsForScope>> = [];
+  const seenIds = new Set<string>();
+  const appendScope = async (where: Prisma.ProblemWhereInput) => {
+    const nextRows = await findProblemsForScope(
+      where,
+      params.sort,
+      Math.min(Math.max(take * 2, 24), 100),
+    );
+
+    for (const row of nextRows) {
+      if (seenIds.has(row.id)) continue;
+      seenIds.add(row.id);
+      rows.push(row);
+      if (rows.length >= take) break;
+    }
+  };
+
+  await appendScope(
+    buildFeedWhere(params, {
+      district: currentDistrict,
+      region: currentRegion || undefined,
+    }),
+  );
+
+  if (rows.length < take && currentRegion) {
+    await appendScope(
+      buildFeedWhere(params, {
+        region: currentRegion,
+        excludeDistrict: currentDistrict,
+      }),
+    );
+  }
+
+  if (rows.length < take) {
+    await appendScope(
+      buildFeedWhere(params, {
+        excludeDistrict: currentDistrict,
+        excludeRegion: currentRegion || undefined,
+      }),
+    );
+  }
+
+  return rows.slice(0, take);
+}
+
+function buildFeedWhere(
+  params: {
+    category?: string;
+    status?: "all" | "pending" | "verified";
+    q?: string;
+  },
+  scope: {
+    district?: string;
+    region?: string;
+    excludeDistrict?: string;
+    excludeRegion?: string;
+  } = {},
+) {
   const where: Prisma.ProblemWhereInput = {};
   const status = params.status ?? "all";
+
   if (status === "pending") {
     where.status = ProblemStatus.PENDING_VERIFICATION;
   } else if (status === "verified") {
     where.status = ProblemStatus.COMMUNITY_VERIFIED;
   }
+
   if (params.category?.trim()) {
     where.category = params.category.trim();
   }
+
   const q = params.q?.trim();
   if (q) {
     where.OR = [
@@ -73,14 +149,34 @@ export async function listProblemsForFeed(params: {
       { region: { contains: q } },
     ];
   }
-  if (params.district?.trim()) {
-    where.district = params.district.trim();
+
+  if (scope.district?.trim()) {
+    where.district = scope.district.trim();
   }
-  if (params.region?.trim()) {
-    where.region = params.region.trim();
+  if (scope.region?.trim()) {
+    where.region = scope.region.trim();
   }
 
-  if (params.sort === "most_severe") {
+  const not: Prisma.ProblemWhereInput[] = [];
+  if (scope.excludeDistrict?.trim()) {
+    not.push({ district: scope.excludeDistrict.trim() });
+  }
+  if (scope.excludeRegion?.trim()) {
+    not.push({ region: scope.excludeRegion.trim() });
+  }
+  if (not.length > 0) {
+    where.NOT = not;
+  }
+
+  return where;
+}
+
+async function findProblemsForScope(
+  where: Prisma.ProblemWhereInput,
+  sort: FeedSort,
+  take: number,
+) {
+  if (sort === "most_severe") {
     const rows = await prisma.problem.findMany({
       where,
       take: 100,
@@ -104,9 +200,9 @@ export async function listProblemsForFeed(params: {
   let orderBy: Prisma.ProblemOrderByWithRelationInput[] = [
     { createdAt: "desc" },
   ];
-  if (params.sort === "most_upvoted") {
+  if (sort === "most_upvoted") {
     orderBy = [{ upvotes: { _count: "desc" } }, { createdAt: "desc" }];
-  } else if (params.sort === "for_you" || params.sort === "latest") {
+  } else if (sort === "for_you" || sort === "latest") {
     orderBy = [{ createdAt: "desc" }];
   }
 
@@ -241,7 +337,10 @@ export async function createProblemFromFormData(
     }
   }
 
-  const file = formData.get("evidence");
+  const file =
+    formData.get("evidenceCamera") ??
+    formData.get("evidenceFile") ??
+    formData.get("evidence");
   let evidence:
     | { type: string; relativeUrl: string }
     | undefined;
@@ -319,6 +418,28 @@ export async function demoMarkProblemVerified(problemId: string) {
     where: { id: problemId },
     data: { status: ProblemStatus.COMMUNITY_VERIFIED },
   });
+  return { ok: true as const };
+}
+
+export async function demoUpdateProblemProgress(
+  problemId: string,
+  stage: ProblemProgressStage,
+) {
+  if (process.env.NODE_ENV === "production") {
+    return { ok: false as const, error: "Unavailable in production." };
+  }
+
+  const status =
+    stage === "reported" || stage === "community_review"
+      ? ProblemStatus.PENDING_VERIFICATION
+      : ProblemStatus.COMMUNITY_VERIFIED;
+
+  await prisma.problem.update({
+    where: { id: problemId },
+    data: { status },
+  });
+
+  await setProblemProgressStage(problemId, stage);
   return { ok: true as const };
 }
 

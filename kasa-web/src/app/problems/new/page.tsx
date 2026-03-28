@@ -1,14 +1,11 @@
 import Link from "next/link";
 import { NewProblemForm } from "@/components/NewProblemForm";
-import { isReadOnlyDemo } from "@/lib/demo-mode";
 
 export const metadata = {
-  title: "Report a problem · Kasa",
+  title: "Report a problem - Kasa",
 };
 
 export default function NewProblemPage() {
-  const readOnlyDemo = isReadOnlyDemo();
-
   return (
     <main className="mx-auto w-full max-w-[600px] flex-1 px-3 py-4">
       <div className="mb-6 flex items-center justify-between border-b border-[var(--kasa-divider)] pb-3">
@@ -23,11 +20,12 @@ export default function NewProblemPage() {
         </h1>
         <span className="w-14" aria-hidden />
       </div>
+
       <p className="text-sm text-[var(--kasa-text-secondary)]">
-        {readOnlyDemo
-          ? "Public Vercel demo mode is browse-only. You can inspect the report flow here, then run locally for live submissions."
-          : "v2 compose flow — one scrollable screen. AI category hints and duplicate check ship next; your report still saves to the demo database."}
+        Add the location, explain what is wrong, and include a photo or file if
+        you have one.
       </p>
+
       <div className="mt-6 rounded-2xl border border-[var(--kasa-divider)] bg-[var(--kasa-card)] p-4 shadow-[var(--kasa-shadow-1)] sm:p-6">
         <NewProblemForm />
       </div>

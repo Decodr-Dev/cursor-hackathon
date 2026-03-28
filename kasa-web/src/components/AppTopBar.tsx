@@ -7,6 +7,8 @@ type FeedProps = {
   variant: "feed";
   locationLabel: string;
   onLocationClick: () => void;
+  onFiltersClick: () => void;
+  onNotificationsClick: () => void;
   notifyCount?: number;
 };
 
@@ -31,25 +33,40 @@ export function AppTopBar(props: Props) {
           >
             KASA
           </Link>
-          <div className="min-w-0 flex-1 flex justify-center">
+          <div className="flex min-w-0 flex-1 justify-center">
             <button
               type="button"
               onClick={props.onLocationClick}
               className="inline-flex max-w-full items-center gap-1 rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold backdrop-blur-sm hover:bg-white/15"
             >
-              <span className="truncate">📍 {props.locationLabel}</span>
+              <span className="truncate">Location: {props.locationLabel}</span>
               <span className="text-[10px] opacity-80" aria-hidden>
-                ▾
+                ▼
               </span>
             </button>
           </div>
-          <div className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full hover:bg-white/10">
-            <BellIcon />
-            {(props.notifyCount ?? 0) > 0 ? (
-              <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--kasa-forest)] px-1 text-[10px] font-bold text-[var(--kasa-gold-on)]">
-                {props.notifyCount! > 9 ? "9+" : props.notifyCount}
-              </span>
-            ) : null}
+          <div className="flex shrink-0 items-center gap-1">
+            <button
+              type="button"
+              onClick={props.onFiltersClick}
+              className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/10"
+              aria-label="Open filters"
+            >
+              <FilterIcon />
+            </button>
+            <button
+              type="button"
+              onClick={props.onNotificationsClick}
+              className="relative flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/10"
+              aria-label="Open notifications"
+            >
+              <BellIcon />
+              {(props.notifyCount ?? 0) > 0 ? (
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--kasa-forest)] px-1 text-[10px] font-bold text-[var(--kasa-gold-on)]">
+                  {props.notifyCount! > 9 ? "9+" : props.notifyCount}
+                </span>
+              ) : null}
+            </button>
           </div>
         </div>
       </header>
@@ -93,6 +110,19 @@ function BellIcon() {
         stroke="currentColor"
         strokeWidth="1.7"
         strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+function FilterIcon() {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
+      <path
+        d="M4 7h16M7 12h10M10 17h4"
+        stroke="currentColor"
+        strokeWidth="1.9"
+        strokeLinecap="round"
       />
     </svg>
   );
