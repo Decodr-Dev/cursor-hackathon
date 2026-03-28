@@ -1,40 +1,77 @@
 @import "tailwindcss";
 
+/* Kasa - black, white, and green */
 :root {
-  --kasa-ink: #14201a;
-  --kasa-muted: #4b5d54;
-  --kasa-surface: #f7f4ee;
-  --kasa-wash: #ece6db;
-  --kasa-border: #d6cfc3;
-  --kasa-forest: #1f5d46;
-  --kasa-gold: #c9a227;
-  --background: var(--kasa-surface);
-  --foreground: var(--kasa-ink);
+  /* Shared accent */
+  --kasa-accent: #22c55e;
+  --kasa-accent-strong: #15803d;
+  --kasa-accent-soft: #86efac;
+  --kasa-accent-wash: #0f1f17;
+  --kasa-accent-on: #07110b;
+
+  /* Compatibility aliases for existing components */
+  --kasa-blue: var(--kasa-accent);
+  --kasa-blue-dim: var(--kasa-accent-strong);
+  --kasa-blue-on: #ffffff;
+  --kasa-deep-green: var(--kasa-accent-strong);
+  --kasa-forest: var(--kasa-accent);
+  --kasa-leaf: var(--kasa-accent-soft);
+  --kasa-gold: var(--kasa-accent);
+  --kasa-gold-light: var(--kasa-accent-wash);
+  --kasa-gold-on: var(--kasa-accent-on);
+
+  /* Severity */
+  --kasa-severity-low: #163320;
+  --kasa-severity-low-text: #dcfce7;
+  --kasa-severity-medium: #14532d;
+  --kasa-severity-medium-text: #dcfce7;
+  --kasa-severity-high: #16a34a;
+  --kasa-severity-high-text: #f7fee7;
+  --kasa-severity-critical: #22c55e;
+  --kasa-severity-critical-text: #041108;
+
+  /* Surfaces */
+  --kasa-bg: #080808;
+  --kasa-card: #111111;
+  --kasa-muted-bg: #1c1c1c;
+  --kasa-divider: #242424;
+
+  /* Typography */
+  --kasa-text-primary: #f2f2f2;
+  --kasa-text-secondary: #9ca3af;
+  --kasa-text-muted: #6b7280;
+  --kasa-text-on-dark: #ffffff;
+
+  /* Shell */
+  --kasa-topbar: #000000;
+  --kasa-trending: var(--kasa-accent-soft);
+
+  /* Elevation */
+  --kasa-shadow-1: 0 1px 3px rgba(0, 0, 0, 0.5);
+  --kasa-shadow-2: 0 4px 12px rgba(0, 0, 0, 0.6);
+  --kasa-shadow-3: 0 8px 24px rgba(0, 0, 0, 0.7);
+
+  --background: var(--kasa-bg);
+  --foreground: var(--kasa-text-primary);
+
+  /* Legacy aliases */
+  --kasa-ink: var(--kasa-text-primary);
+  --kasa-border: var(--kasa-divider);
+  --kasa-surface: var(--kasa-card);
+  --kasa-wash: var(--kasa-muted-bg);
+  --kasa-muted: var(--kasa-text-muted);
+  --font-display: var(--font-inter);
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
-  --font-display: var(--font-display);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --kasa-ink: #e8f0e9;
-    --kasa-muted: #9fb0a6;
-    --kasa-surface: #0f1613;
-    --kasa-wash: #1a2420;
-    --kasa-border: #2a3830;
-    --kasa-forest: #2f9f72;
-    --kasa-gold: #e3c66d;
-    --background: var(--kasa-surface);
-    --foreground: var(--kasa-ink);
-  }
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-inter);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: var(--font-sans), system-ui, sans-serif;
+  font-family: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }

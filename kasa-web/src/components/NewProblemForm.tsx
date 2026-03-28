@@ -1,16 +1,15 @@
 "use client";
 
-import { useActionState, useMemo, useState } from "react";
-import { createProblem, type CreateProblemState } from "@/app/actions/problems";
+import { useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { PROBLEM_CATEGORIES } from "@/lib/categories";
 import { GHANA_REGIONS } from "@/lib/regions";
 
 export function NewProblemForm() {
+  const router = useRouter();
   const [category, setCategory] = useState(PROBLEM_CATEGORIES[0].slug);
-  const [state, action, pending] = useActionState<
-    CreateProblemState,
-    FormData
-  >(createProblem, null);
+  const [error, setError] = useState<string | null>(null);
+  const [pending, setPending] = useState(false);
 
   const subs = useMemo(() => {
     const c = PROBLEM_CATEGORIES.find((x) => x.slug === category);
@@ -18,13 +17,46 @@ export function NewProblemForm() {
   }, [category]);
 
   return (
-    <form action={action} className="flex flex-col gap-5">
-      {state?.error ? (
+    <form
+      className="flex flex-col gap-5"
+      onSubmit={async (e) => {
+        e.preventDefault();
+        setError(null);
+        setPending(true);
+        const form = e.currentTarget;
+        const fd = new FormData(form);
+        try {
+          const res = await fetch("/api/v1/problems", {
+            method: "POST",
+            body: fd,
+            credentials: "include",
+          });
+          const data = (await res.json().catch(() => ({}))) as {
+            id?: string;
+            error?: string;
+          };
+          if (!res.ok) {
+            setError(data.error ?? "Something went wrong.");
+            setPending(false);
+            return;
+          }
+          if (data.id) router.push(`/problems/${data.id}`);
+          else {
+            setError("Unexpected response from server.");
+            setPending(false);
+          }
+        } catch {
+          setError("Network error — try again.");
+          setPending(false);
+        }
+      }}
+    >
+      {error ? (
         <div
           role="alert"
           className="rounded-2xl border border-red-300/80 bg-red-50 px-4 py-3 text-sm text-red-900 dark:border-red-900/60 dark:bg-red-950/40 dark:text-red-100"
         >
-          {state.error}
+          {error}
         </div>
       ) : null}
 
@@ -123,8 +155,8 @@ export function NewProblemForm() {
         </label>
       </div>
       <p className="-mt-2 text-xs text-[var(--kasa-muted)]">
-        Real Kasa will confirm GPS from your photo. For this demo you can
-        paste coordinates or leave both blank.
+        Real Kasa will confirm GPS from your photo. For this demo you can paste
+        coordinates or leave both blank.
       </p>
 
       <label className="block text-sm font-medium text-[var(--kasa-ink)]">

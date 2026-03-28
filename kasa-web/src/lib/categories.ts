@@ -1,13 +1,15 @@
 export type ProblemCategory = {
   slug: string;
   label: string;
+  emoji: string;
   subcategories: { slug: string; label: string }[];
 };
 
 export const PROBLEM_CATEGORIES: ProblemCategory[] = [
   {
     slug: "roads_transport",
-    label: "Roads & transport",
+    label: "Roads",
+    emoji: "🛣️",
     subcategories: [
       { slug: "pothole", label: "Pothole" },
       { slug: "broken_streetlight", label: "Broken streetlight" },
@@ -16,7 +18,8 @@ export const PROBLEM_CATEGORIES: ProblemCategory[] = [
   },
   {
     slug: "water_sanitation",
-    label: "Water & sanitation",
+    label: "Water",
+    emoji: "💧",
     subcategories: [
       { slug: "no_water", label: "No piped water" },
       { slug: "unsafe_water", label: "Unsafe water" },
@@ -26,6 +29,7 @@ export const PROBLEM_CATEGORIES: ProblemCategory[] = [
   {
     slug: "health",
     label: "Health",
+    emoji: "🏥",
     subcategories: [
       { slug: "clinic_access", label: "Clinic access" },
       { slug: "waste_disposal", label: "Medical waste / hygiene" },
@@ -33,7 +37,8 @@ export const PROBLEM_CATEGORIES: ProblemCategory[] = [
   },
   {
     slug: "utilities",
-    label: "Power & internet",
+    label: "Power",
+    emoji: "⚡",
     subcategories: [
       { slug: "power_outage", label: "Power outage pattern" },
       { slug: "internet", label: "Poor connectivity" },
@@ -41,7 +46,8 @@ export const PROBLEM_CATEGORIES: ProblemCategory[] = [
   },
   {
     slug: "governance",
-    label: "Governance & safety",
+    label: "Safety",
+    emoji: "🛡️",
     subcategories: [
       { slug: "procurement", label: "Procurement concern" },
       { slug: "public_safety", label: "Public safety" },
@@ -50,6 +56,7 @@ export const PROBLEM_CATEGORIES: ProblemCategory[] = [
   {
     slug: "other",
     label: "Other",
+    emoji: "📌",
     subcategories: [{ slug: "general", label: "General" }],
   },
 ];
@@ -57,6 +64,11 @@ export const PROBLEM_CATEGORIES: ProblemCategory[] = [
 export function categoryLabel(slug: string): string {
   const c = PROBLEM_CATEGORIES.find((x) => x.slug === slug);
   return c?.label ?? slug;
+}
+
+export function categoryEmoji(slug: string): string {
+  const c = PROBLEM_CATEGORIES.find((x) => x.slug === slug);
+  return c?.emoji ?? "📋";
 }
 
 export function subcategoryLabel(

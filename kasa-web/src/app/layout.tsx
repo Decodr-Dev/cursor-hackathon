@@ -1,24 +1,18 @@
 import type { Metadata } from "next";
-import { DM_Sans, Fraunces } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
-import { SiteHeader } from "@/components/SiteHeader";
+import { AppChrome } from "@/components/AppChrome";
 
-const dmSans = DM_Sans({
-  variable: "--font-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
-});
-
-const frauncesSetup = Fraunces({
-  variable: "--font-display",
-  subsets: ["latin"],
-  weight: ["500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800"],
 });
 
 export const metadata: Metadata = {
   title: "Kasa — Speak",
   description:
-    "Ghana’s problem–solution marketplace (hackathon demo): report civic issues, upvote neighbours, and track verification.",
+    "Ghana’s civic feed: report problems, add your voice, and track accountability (hackathon demo).",
 };
 
 export default function RootLayout({
@@ -27,16 +21,12 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html
-      lang="en"
-      className={`${dmSans.variable} ${frauncesSetup.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col bg-[var(--background)] text-[var(--foreground)]">
-        <SiteHeader />
-        <div className="flex-1">{children}</div>
-        <footer className="border-t border-[var(--kasa-border)] py-6 text-center text-xs text-[var(--kasa-muted)]">
+    <html lang="en" className={`${inter.variable} h-full antialiased`}>
+      <body className="flex min-h-full flex-col bg-[var(--kasa-bg)] text-[var(--kasa-text-primary)]">
+        <AppChrome>{children}</AppChrome>
+        <footer className="hidden border-t border-[var(--kasa-divider)] py-6 text-center text-xs text-[var(--kasa-text-muted)] lg:block">
           Hackathon build — not a government service. Identity, SMS, and maps
-          are not wired up yet.
+          ship on the product roadmap.
         </footer>
       </body>
     </html>

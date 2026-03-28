@@ -1,0 +1,150 @@
+"use client";
+
+import { Suspense, useState } from "react";
+import { usePathname, useSearchParams } from "next/navigation";
+import Link from "next/link";
+import { AppTopBar, type StackProps } from "@/components/AppTopBar";
+import { FeedAutoLocation } from "@/components/FeedAutoLocation";
+import { LocationSheet } from "@/components/LocationSheet";
+import { MobileDock } from "@/components/MobileDock";
+import { locationLabelForFeed } from "@/lib/location";
+
+function stackBarFor(pathname: string): StackProps | null {
+  if (pathname.startsWith("/problems/") && pathname !== "/problems/new") {
+    return {
+      variant: "stack",
+      title: "Thread",
+      backHref: "/",
+      sharePath: pathname,
+      shareTitle: "Kasa report",
+    };
+  }
+  if (pathname.startsWith("/trending")) {
+    return { variant: "stack", title: "Trending", backHref: "/" };
+  }
+  if (pathname.startsWith("/scores")) {
+    return { variant: "stack", title: "Scores", backHref: "/" };
+  }
+  if (pathname.startsWith("/me")) {
+    return { variant: "stack", title: "Me", backHref: "/" };
+  }
+  if (pathname.startsWith("/problems/new")) {
+    return { variant: "stack", title: "Report", backHref: "/" };
+  }
+  return null;
+}
+
+function ChromeInner({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const [locOpen, setLocOpen] = useState(false);
+  const district = searchParams.get("district")?.trim() ?? "";
+  const region = searchParams.get("region")?.trim() ?? "";
+  const locationLabel = locationLabelForFeed({ district, region });
+
+  const stack = pathname === "/" ? null : stackBarFor(pathname);
+
+  return (
+    <div className="flex min-h-0 flex-1 flex-col">
+      <FeedAutoLocation />
+      {stack ? (
+        <AppTopBar {...stack} />
+      ) : (
+        <AppTopBar
+          variant="feed"
+          locationLabel={locationLabel}
+          onLocationClick={() => setLocOpen(true)}
+          notifyCount={0}
+        />
+      )}
+      <LocationSheet open={locOpen} onClose={() => setLocOpen(false)} />
+      <div className="mx-auto flex w-full max-w-6xl flex-1 gap-0 lg:gap-8 lg:px-6">
+        <DesktopLeftNav />
+        <div className="min-w-0 flex-1 pb-24 lg:max-w-[600px] lg:pb-10">
+          {children}
+        </div>
+        <DesktopRightAside />
+      </div>
+      <MobileDock />
+    </div>
+  );
+}
+
+function DesktopLeftNav() {
+  return (
+    <aside className="sticky top-20 hidden w-56 shrink-0 self-start lg:block">
+      <nav className="flex flex-col gap-1 pr-2">
+        <NavL href="/" label="Feed" />
+        <NavL href="/trending" label="Trending" hot />
+        <Link
+          href="/problems/new"
+          className="mt-2 rounded-xl bg-[var(--kasa-gold)] py-3 text-center text-sm font-bold text-[var(--kasa-gold-on)] shadow-[var(--kasa-shadow-2)]"
+        >
+          Report
+        </Link>
+        <NavL href="/scores" label="Scores" />
+        <NavL href="/me" label="Me" />
+      </nav>
+    </aside>
+  );
+}
+
+function NavL({
+  href,
+  label,
+  hot,
+}: {
+  href: string;
+  label: string;
+  hot?: boolean;
+}) {
+  return (
+    <Link
+      href={href}
+      className="rounded-xl px-3 py-2 text-sm font-semibold text-[var(--kasa-text-primary)] hover:bg-[var(--kasa-muted-bg)]"
+    >
+      {hot ? <span className="text-[var(--kasa-trending)]">🔥</span> : null}{" "}
+      {label}
+    </Link>
+  );
+}
+
+function DesktopRightAside() {
+  return (
+    <aside className="sticky top-20 hidden w-72 shrink-0 self-start xl:block">
+      <div className="rounded-2xl border border-[var(--kasa-divider)] bg-[var(--kasa-card)] p-4 shadow-[var(--kasa-shadow-1)]">
+        <p className="text-xs font-bold uppercase tracking-wide text-[var(--kasa-trending)]">
+          Right now
+        </p>
+        <p className="mt-2 text-sm text-[var(--kasa-text-secondary)]">
+          Open trending for rising categories and the loudest reports.
+        </p>
+        <Link
+          href="/trending"
+          className="mt-3 inline-block text-sm font-bold text-[var(--kasa-forest)] hover:underline"
+        >
+          See trending →
+        </Link>
+      </div>
+      <div className="mt-4 rounded-2xl border border-[var(--kasa-divider)] bg-[var(--kasa-card)] p-4">
+        <p className="text-xs font-bold uppercase text-[var(--kasa-text-secondary)]">
+          Officials
+        </p>
+        <Link
+          href="/scores"
+          className="mt-2 inline-block text-sm font-semibold text-[var(--kasa-forest)] hover:underline"
+        >
+          Accountability scores →
+        </Link>
+      </div>
+    </aside>
+  );
+}
+
+export function AppChrome({ children }: { children: React.ReactNode }) {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-[var(--kasa-bg)]" />}>
+      <ChromeInner>{children}</ChromeInner>
+    </Suspense>
+  );
+}

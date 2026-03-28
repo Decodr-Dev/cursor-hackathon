@@ -1,7 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
-import { upvoteProblem, removeUpvote } from "@/app/actions/problems";
+import { useRouter } from "next/navigation";
 
 type Props = {
   problemId: string;
@@ -10,13 +10,14 @@ type Props = {
 };
 
 export function UpvoteControl({ problemId, count, hasUpvoted }: Props) {
+  const router = useRouter();
   const [pending, start] = useTransition();
 
   return (
     <div className="flex flex-wrap items-center gap-2">
       <div className="rounded-2xl border border-[var(--kasa-border)] bg-[var(--kasa-surface)] px-3 py-2 text-sm text-[var(--kasa-muted)]">
         <span className="font-semibold text-[var(--kasa-ink)]">{count}</span>{" "}
-        {count === 1 ? "upvote" : "upvotes"}
+        {count === 1 ? "voice" : "voices"}
       </div>
       {!hasUpvoted ? (
         <button
@@ -24,7 +25,13 @@ export function UpvoteControl({ problemId, count, hasUpvoted }: Props) {
           disabled={pending}
           onClick={() =>
             start(() => {
-              void upvoteProblem(problemId);
+              void (async () => {
+                const res = await fetch(
+                  `/api/v1/problems/${problemId}/upvote`,
+                  { method: "POST", credentials: "include" },
+                );
+                if (res.ok) router.refresh();
+              })();
             })
           }
           className="rounded-full bg-[var(--kasa-forest)] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:brightness-110 disabled:opacity-50"
@@ -37,16 +44,23 @@ export function UpvoteControl({ problemId, count, hasUpvoted }: Props) {
           disabled={pending}
           onClick={() =>
             start(() => {
-              void removeUpvote(problemId);
+              void (async () => {
+                const res = await fetch(
+                  `/api/v1/problems/${problemId}/upvote`,
+                  { method: "DELETE", credentials: "include" },
+                );
+                if (res.ok) router.refresh();
+              })();
             })
           }
           className="rounded-full border border-[var(--kasa-border)] bg-[var(--kasa-wash)] px-4 py-2 text-sm font-medium text-[var(--kasa-ink)] hover:bg-[var(--kasa-border)]/40 disabled:opacity-50"
         >
-          {pending ? "Updating…" : "Remove my upvote"}
+          {pending ? "Updating…" : "Remove my voice"}
         </button>
       )}
       <p className="w-full text-xs text-[var(--kasa-muted)]">
-        Demo uses a browser cookie so one device gets one upvote per report.
+        Demo: one vote per report on this browser (cookie), until real sign-in
+        ships.
       </p>
     </div>
   );

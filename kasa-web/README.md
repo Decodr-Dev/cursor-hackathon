@@ -1,6 +1,6 @@
 # Kasa — hackathon web demo
 
-This folder is a **small, working slice** of the Kasa product idea from your PRD: people can **post a civic problem**, **see a feed**, **open a detail page**, and **upvote** (one tap per browser, using a cookie — **not** real Ghana Card login).
+This folder is a **small, working slice** of the Kasa product idea from your PRD, with UI aligned to **`Kasa_UI_Specification_v2.0.md`**: feed-centric layout, **KASA** top bar + location pill, five-tab bottom nav (**Feed · Trending · Report · Scores · Me**), v2 **problem cards** (severity demo, action row), **Trending** screen, and desktop **three-column** shell (nav + 600px feed + aside). People can **post**, **browse**, **open threads**, and **upvote** (cookie per browser — not real Ghana Card login).
 
 ## What you need installed
 
@@ -56,6 +56,7 @@ The footer and on-page notes remind viewers this is a **hackathon prototype**, n
 
 ## Project layout (short)
 
-- `src/app/` — pages: home feed (`/`), new report (`/problems/new`), detail (`/problems/[id]`).
-- `src/app/actions/problems.ts` — server actions that write to the database (create post, upvote, demo verify).
+- `src/app/` — pages: home stream (`/`), new report (`/problems/new`), detail (`/problems/[id]`), plus `explore`, `scores`, `me` placeholders matching the UI shell.
+- `src/server/problem-service.ts` — backend logic (list, create, upvote, demo verify).
+- `src/app/api/v1/problems/` — HTTP API used by the browser (and ready for other clients).
 - `prisma/schema.prisma` — data model: problems, evidence files, upvotes.
