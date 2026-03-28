@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { getProblemProgress } from "@/server/problem-progress";
-import { getProblemById } from "@/server/problem-service";
+import {
+  getProblemById,
+  getProblemSeveritySnapshot,
+} from "@/server/problem-service";
 
 export async function GET(
   _req: Request,
@@ -12,6 +15,7 @@ export async function GET(
     return NextResponse.json({ error: "Not found" }, { status: 404 });
   }
   const progress = await getProblemProgress(problem.id, problem.status);
+  const severitySnapshot = await getProblemSeveritySnapshot(problem, progress.stage);
   return NextResponse.json({
     data: {
       id: problem.id,
@@ -26,6 +30,8 @@ export async function GET(
       longitude: problem.longitude,
       createdAt: problem.createdAt.toISOString(),
       upvoteCount: problem._count.upvotes,
+      severityScore: severitySnapshot?.severityScore ?? 0,
+      costOfInactionPerDay: severitySnapshot?.costOfInactionPerDay ?? 0,
       evidence: problem.evidence.map((e) => ({
         id: e.id,
         type: e.type,

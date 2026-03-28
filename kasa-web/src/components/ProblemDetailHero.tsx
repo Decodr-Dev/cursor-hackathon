@@ -1,8 +1,27 @@
-import { categoryEmoji, categoryLabel, subcategoryLabel } from "@/lib/categories";
+import { Route, Droplets, Heart, Zap, Shield, Tag } from "lucide-react";
+import { categoryLabel, subcategoryLabel } from "@/lib/categories";
+import { severityStyle } from "@/lib/civic-metrics";
 import type { ProblemStatus } from "@prisma/client";
 import { StatusBadge } from "@/components/StatusBadge";
 import { ProblemProgressBadge } from "@/components/ProblemProgressBadge";
 import type { ProblemProgressStage } from "@/lib/problem-progress";
+
+function CategoryIcon({ slug }: { slug: string }) {
+  switch (slug) {
+    case "roads_transport":
+      return <Route size={20} strokeWidth={1.7} />;
+    case "water_sanitation":
+      return <Droplets size={20} strokeWidth={1.7} />;
+    case "health":
+      return <Heart size={20} strokeWidth={1.7} />;
+    case "utilities":
+      return <Zap size={20} strokeWidth={1.7} />;
+    case "governance":
+      return <Shield size={20} strokeWidth={1.7} />;
+    default:
+      return <Tag size={20} strokeWidth={1.7} />;
+  }
+}
 
 export function ProblemDetailHero(props: {
   category: string;
@@ -17,21 +36,19 @@ export function ProblemDetailHero(props: {
   daysOpen: number;
   description: string;
 }) {
+  const sev = severityStyle(props.severity);
   return (
     <>
-      <p className="text-xs font-bold uppercase tracking-wide text-[var(--kasa-text-muted)]">
-        The problem
-      </p>
-      <header className="mt-2 flex gap-3">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--kasa-muted-bg)] text-sm font-bold text-[var(--kasa-forest)] ring-2 ring-[var(--kasa-divider)]">
+      <header className="flex gap-3">
+        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[var(--kasa-muted-bg)] text-sm font-bold text-[var(--kasa-accent)] ring-2 ring-[var(--kasa-divider)]">
           {props.district.charAt(0).toUpperCase() || "K"}
         </div>
         <div>
           <p className="text-[15px] font-semibold text-[var(--kasa-text-primary)]">
-            Reporter - {props.district}
+            {props.district}
           </p>
           <p className="text-[13px] text-[var(--kasa-text-secondary)]">
-            {props.district}, {props.region} - {props.createdAtLabel}
+            {props.region} · {props.createdAtLabel}
           </p>
         </div>
       </header>
@@ -40,20 +57,25 @@ export function ProblemDetailHero(props: {
         <StatusBadge status={props.status} />
         <ProblemProgressBadge stage={props.progressStage} />
         <span
-          className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${props.severityClassName}`}
+          className={`rounded-full px-2.5 py-0.5 text-[11px] font-bold ${sev.bg} ${sev.text}`}
         >
-          Severity {props.severity}
+          {sev.label}
         </span>
-        <span className="text-xs text-[var(--kasa-text-secondary)]">
-          Open {props.daysOpen}d
+        <span className="text-xs text-[var(--kasa-text-muted)]">
+          {props.daysOpen}d open
         </span>
       </div>
 
-      <h1 className="mt-4 text-2xl font-bold text-[var(--kasa-text-primary)]">
-        {categoryEmoji(props.category)} {categoryLabel(props.category)}
-        {props.subcategory
-          ? ` > ${subcategoryLabel(props.category, props.subcategory)}`
-          : ""}
+      <h1 className="mt-4 flex items-center gap-2 text-2xl font-bold text-[var(--kasa-text-primary)]">
+        <span className="text-[var(--kasa-accent)]">
+          <CategoryIcon slug={props.category} />
+        </span>
+        {categoryLabel(props.category)}
+        {props.subcategory ? (
+          <span className="text-[var(--kasa-text-muted)]">
+            · {subcategoryLabel(props.category, props.subcategory)}
+          </span>
+        ) : null}
       </h1>
 
       <p className="mt-4 whitespace-pre-wrap text-[15px] leading-relaxed text-[var(--kasa-text-primary)]">

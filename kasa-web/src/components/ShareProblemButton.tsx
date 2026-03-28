@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Link2 } from "lucide-react";
 
 export function ShareProblemButton({
   path,
@@ -35,9 +36,10 @@ export function ShareProblemButton({
     <button
       type="button"
       onClick={() => void onShare()}
-      className="inline-flex items-center gap-1 rounded-lg px-2 py-1 text-[13px] font-medium text-[var(--kasa-text-secondary)] hover:bg-[var(--kasa-muted-bg)]"
+      className="inline-flex items-center gap-1.5 rounded-lg px-2 py-1 text-[13px] font-medium text-[var(--kasa-text-secondary)] hover:bg-[var(--kasa-muted-bg)]"
     >
-      <span aria-hidden>🔗</span> {label}
+      <Link2 size={13} strokeWidth={2} />
+      {label}
     </button>
   );
 }

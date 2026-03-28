@@ -5,14 +5,14 @@ const copy: Record<
   { label: string; className: string }
 > = {
   PENDING_VERIFICATION: {
-    label: "Pending check",
+    label: "Unverified",
     className:
-      "bg-amber-100 text-amber-950 ring-1 ring-amber-300/70 dark:bg-amber-950/40 dark:text-amber-100 dark:ring-amber-800/80",
+      "bg-[#1a1100] text-amber-400 ring-1 ring-amber-400/20",
   },
   COMMUNITY_VERIFIED: {
     label: "Verified",
     className:
-      "bg-emerald-100 text-emerald-950 ring-1 ring-emerald-300/70 dark:bg-emerald-950/40 dark:text-emerald-100 dark:ring-emerald-800/80",
+      "bg-[#0a1a0a] text-emerald-400 ring-1 ring-emerald-400/20",
   },
 };
 

@@ -24,9 +24,9 @@ export function UpvoteControl({ problemId, count, hasUpvoted }: Props) {
         <button
           type="button"
           disabled
-          className="rounded-full border border-[var(--kasa-border)] bg-[var(--kasa-wash)] px-4 py-2 text-sm font-medium text-[var(--kasa-ink)] opacity-70"
+          className="rounded-full border border-[var(--kasa-border)] bg-[var(--kasa-wash)] px-4 py-2 text-sm font-medium text-[var(--kasa-ink)] opacity-50"
         >
-          Voting disabled on public demo
+          Voting disabled
         </button>
       ) : !hasUpvoted ? (
         <button
@@ -43,9 +43,9 @@ export function UpvoteControl({ problemId, count, hasUpvoted }: Props) {
               })();
             })
           }
-          className="rounded-full bg-[var(--kasa-forest)] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:brightness-110 disabled:opacity-50"
+          className="rounded-full bg-[var(--kasa-accent)] px-4 py-2 text-sm font-semibold text-white shadow-sm hover:brightness-110 disabled:opacity-50"
         >
-          {pending ? "Saving…" : "I have this problem too"}
+          {pending ? "Saving…" : "Add voice"}
         </button>
       ) : (
         <button
@@ -64,14 +64,9 @@ export function UpvoteControl({ problemId, count, hasUpvoted }: Props) {
           }
           className="rounded-full border border-[var(--kasa-border)] bg-[var(--kasa-wash)] px-4 py-2 text-sm font-medium text-[var(--kasa-ink)] hover:bg-[var(--kasa-border)]/40 disabled:opacity-50"
         >
-          {pending ? "Updating…" : "Remove my voice"}
+          {pending ? "Updating…" : "Remove"}
         </button>
       )}
-      <p className="w-full text-xs text-[var(--kasa-muted)]">
-        {readOnlyDemo
-          ? "Voting stays off on the public demo."
-          : "Demo: one vote per report on this browser (cookie), until real sign-in ships."}
-      </p>
     </div>
   );
 }

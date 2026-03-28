@@ -4,9 +4,17 @@ import type { Prisma } from "@prisma/client";
 import { ProblemStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { PROBLEM_CATEGORIES } from "@/lib/categories";
-import { daysOpenSince, demoSeverityScore } from "@/lib/civic-metrics";
+import {
+  buildProblemSeveritySnapshots,
+  calculateTrendPulse,
+  daysOpenSince,
+  type ProblemSeveritySnapshot,
+} from "@/lib/civic-metrics";
 import type { ProblemProgressStage } from "@/lib/problem-progress";
-import { setProblemProgressStage } from "@/server/problem-progress";
+import {
+  getProblemProgressMap,
+  setProblemProgressStage,
+} from "@/server/problem-progress";
 
 const DESC_MAX = 2000;
 const UPLOAD_MAX = 5 * 1024 * 1024;
@@ -39,6 +47,57 @@ export function parseFeedSort(raw: string | undefined): FeedSort {
 export type ProblemListRow = Awaited<
   ReturnType<typeof listProblemsForFeed>
 >[number];
+
+type ProblemSeverityRow = {
+  id: string;
+  category: string;
+  region: string;
+  district: string;
+  createdAt: Date;
+  status: ProblemStatus;
+  _count: { upvotes: number };
+};
+
+type ProblemProgressMap = Record<
+  string,
+  {
+    stage: ProblemProgressStage;
+    updatedAt: string;
+  }
+>;
+
+function toSeverityRecord(
+  row: ProblemSeverityRow,
+  progressStage?: ProblemProgressStage,
+) {
+  return {
+    id: row.id,
+    category: row.category,
+    region: row.region,
+    district: row.district,
+    createdAt: row.createdAt,
+    status: row.status,
+    upvoteCount: row._count.upvotes,
+    progressStage,
+  };
+}
+
+export function buildSeverityMapForRows(
+  rows: Array<{
+    id: string;
+    category: string;
+    region: string;
+    district: string;
+    createdAt: Date;
+    status: ProblemStatus;
+    _count: { upvotes: number };
+  }>,
+  progressMap?: ProblemProgressMap,
+) {
+  return buildProblemSeveritySnapshots(
+    rows.map((row) => toSeverityRecord(row, progressMap?.[row.id]?.stage)),
+  );
+}
 
 const feedInclude = {
   evidence: { take: 1, orderBy: { createdAt: "asc" as const } },
@@ -183,14 +242,17 @@ async function findProblemsForScope(
       include: feedInclude,
       orderBy: { createdAt: "desc" },
     });
+    const progressMap = await getProblemProgressMap(
+      rows.map((row) => ({
+        id: row.id,
+        status: row.status,
+      })),
+    );
+    const severityMap = buildSeverityMapForRows(rows, progressMap);
     return rows
       .map((p) => ({
         p,
-        s: demoSeverityScore({
-          createdAt: p.createdAt,
-          status: p.status,
-          upvoteCount: p._count.upvotes,
-        }),
+        s: severityMap[p.id]?.severityScore ?? 0,
       }))
       .sort((a, b) => b.s - a.s)
       .slice(0, take)
@@ -251,33 +313,87 @@ export async function getPublicFeedStats(params?: {
 }
 
 export async function getTrendingSnapshot() {
-  const byCat = await prisma.problem.groupBy({
-    by: ["category"],
-    _count: { id: true },
+  const problems = await prisma.problem.findMany({
+    include: feedInclude,
+    orderBy: { createdAt: "desc" },
   });
-  const categories = [...byCat].sort(
-    (a, b) => b._count.id - a._count.id,
+  const progressMap = await getProblemProgressMap(
+    problems.map((problem) => ({
+      id: problem.id,
+      status: problem.status,
+    })),
   );
+  const severityMap = buildSeverityMapForRows(problems, progressMap);
 
-  const topVoices = await prisma.problem.findMany({
-    orderBy: [{ upvotes: { _count: "desc" } }, { createdAt: "desc" }],
-    take: 6,
-    include: feedInclude,
-  });
+  const categoryBuckets = new Map<string, typeof problems>();
+  for (const problem of problems) {
+    const current = categoryBuckets.get(problem.category) ?? [];
+    current.push(problem);
+    categoryBuckets.set(problem.category, current);
+  }
 
-  const longestOpenRows = await prisma.problem.findMany({
-    where: { status: ProblemStatus.PENDING_VERIFICATION },
-    orderBy: { createdAt: "asc" },
-    take: 5,
-    include: feedInclude,
-  });
+  const categories = Array.from(categoryBuckets.entries())
+    .map(([category, rows]) => {
+      const recentReports = rows.filter(
+        (row) => daysOpenSince(row.createdAt) <= 7,
+      ).length;
+      const verifiedReports = rows.filter((row) => {
+        const stage = progressMap[row.id]?.stage;
+        return (
+          stage === "verified" ||
+          stage === "in_progress" ||
+          stage === "resolved"
+        );
+      }).length;
+      const avgSeverity = Math.round(
+        rows.reduce(
+          (sum, row) => sum + (severityMap[row.id]?.severityScore ?? 0),
+          0,
+        ) / Math.max(rows.length, 1),
+      );
 
-  const longestOpen = longestOpenRows.map((p) => ({
-    problem: p,
-    daysOpen: daysOpenSince(p.createdAt),
-  }));
+      return {
+        category,
+        reports: rows.length,
+        recentReports,
+        verifiedReports,
+        avgSeverity,
+        trendPulse: calculateTrendPulse({
+          totalReports: rows.length,
+          recentReports,
+          verifiedReports,
+        }),
+      };
+    })
+    .sort((left, right) => {
+      if (right.trendPulse !== left.trendPulse) {
+        return right.trendPulse - left.trendPulse;
+      }
+      if (right.avgSeverity !== left.avgSeverity) {
+        return right.avgSeverity - left.avgSeverity;
+      }
+      return right.reports - left.reports;
+    });
 
-  return { categories, topVoices, longestOpen };
+  const topVoices = [...problems]
+    .sort((left, right) => {
+      if (right._count.upvotes !== left._count.upvotes) {
+        return right._count.upvotes - left._count.upvotes;
+      }
+      return right.createdAt.getTime() - left.createdAt.getTime();
+    })
+    .slice(0, 6);
+
+  const longestOpen = [...problems]
+    .filter((problem) => progressMap[problem.id]?.stage !== "resolved")
+    .sort((left, right) => left.createdAt.getTime() - right.createdAt.getTime())
+    .slice(0, 5)
+    .map((problem) => ({
+      problem,
+      daysOpen: daysOpenSince(problem.createdAt),
+    }));
+
+  return { categories, topVoices, longestOpen, severityMap };
 }
 
 export async function getProblemById(id: string) {
@@ -288,6 +404,39 @@ export async function getProblemById(id: string) {
       _count: { select: { upvotes: true } },
     },
   });
+}
+
+export async function getProblemSeveritySnapshot(
+  problem: ProblemSeverityRow,
+  progressStage?: ProblemProgressStage,
+): Promise<ProblemSeveritySnapshot> {
+  const relatedProblems = await prisma.problem.findMany({
+    where: {
+      category: problem.category,
+      region: problem.region,
+    },
+    include: {
+      _count: { select: { upvotes: true } },
+    },
+  });
+  const progressMap = await getProblemProgressMap(
+    relatedProblems.map((row) => ({
+      id: row.id,
+      status: row.status,
+    })),
+  );
+
+  if (progressStage) {
+    progressMap[problem.id] = {
+      stage: progressStage,
+      updatedAt: progressMap[problem.id]?.updatedAt ?? new Date().toISOString(),
+    };
+  }
+
+  return (
+    buildSeverityMapForRows(relatedProblems, progressMap)[problem.id] ??
+    buildSeverityMapForRows([problem], progressMap)[problem.id]
+  );
 }
 
 export type CreateProblemResult =
@@ -443,13 +592,12 @@ export async function demoUpdateProblemProgress(
   return { ok: true as const };
 }
 
-export function problemToJson(p: ProblemListRow) {
+export function problemToJson(
+  p: ProblemListRow,
+  severitySnapshot?: ProblemSeveritySnapshot,
+) {
   const thumb = p.evidence[0];
-  const severityScore = demoSeverityScore({
-    createdAt: p.createdAt,
-    status: p.status,
-    upvoteCount: p._count.upvotes,
-  });
+  const snapshot = severitySnapshot ?? buildSeverityMapForRows([p])[p.id];
   return {
     id: p.id,
     category: p.category,
@@ -460,7 +608,8 @@ export function problemToJson(p: ProblemListRow) {
     status: p.status,
     createdAt: p.createdAt.toISOString(),
     upvoteCount: p._count.upvotes,
-    severityScore,
+    severityScore: snapshot?.severityScore ?? 0,
+    costOfInactionPerDay: snapshot?.costOfInactionPerDay ?? 0,
     previewImageUrl: thumb?.type === "photo" ? thumb.fileUrl : null,
   };
 }

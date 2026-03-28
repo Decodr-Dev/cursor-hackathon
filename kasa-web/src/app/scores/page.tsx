@@ -1,22 +1,63 @@
-import Link from "next/link";
+import { OfficialScoreList } from "@/components/OfficialScoreList";
+import { RegionScoreGrid } from "@/components/RegionScoreGrid";
+import { ScoresDashboardHeader } from "@/components/ScoresDashboardHeader";
+import { ScoresDataView } from "@/components/ScoresDataView";
+import { ScoreSummaryStrip } from "@/components/ScoreSummaryStrip";
+import { ScoresToolbar } from "@/components/ScoresToolbar";
+import { parseOfficialType } from "@/lib/demo-officials";
+import { getPublicScoreDashboard } from "@/server/accountability-service";
 
-export default function ScoresPage() {
+export const dynamic = "force-dynamic";
+
+function parseView(raw: string | undefined) {
+  if (raw === "map" || raw === "data") return raw;
+  return "rankings";
+}
+
+export default async function ScoresPage({
+  searchParams,
+}: {
+  searchParams: Promise<{
+    q?: string;
+    type?: string;
+    view?: string;
+  }>;
+}) {
+  const params = await searchParams;
+  const q = params.q?.trim() ?? "";
+  const type = parseOfficialType(params.type);
+  const view = parseView(params.view);
+  const dashboard = await getPublicScoreDashboard({
+    q: q || undefined,
+    type,
+  });
+
   return (
-    <main className="mx-auto max-w-lg px-4 py-8 sm:max-w-xl">
-      <h1 className="font-[family-name:var(--font-display)] text-2xl font-semibold text-[var(--kasa-ink)]">
-        Accountability scores
-      </h1>
-      <p className="mt-3 text-sm leading-relaxed text-[var(--kasa-muted)]">
-        The public dashboard for officials (maps, rankings, resolution stats) is
-        on the roadmap. This tab mirrors the UI spec navigation so the shell
-        matches the product story.
-      </p>
-      <p className="mt-4 text-sm text-[var(--kasa-muted)]">
-        ←{" "}
-        <Link href="/" className="font-semibold text-[var(--kasa-forest)] hover:underline">
-          Back to the stream
-        </Link>
-      </p>
+    <main className="space-y-4 px-4 py-6">
+      <ScoresDashboardHeader
+        nationalAverageScore={dashboard.summary.nationalAverageScore}
+        topPerformer={dashboard.summary.topPerformer}
+      />
+
+      <ScoresToolbar view={view} type={type} q={q} />
+
+      <ScoreSummaryStrip summary={dashboard.summary} />
+
+      {view === "rankings" ? (
+        <OfficialScoreList scorecards={dashboard.scorecards} />
+      ) : null}
+
+      {view === "map" ? (
+        <RegionScoreGrid regions={dashboard.regionAverages} />
+      ) : null}
+
+      {view === "data" ? (
+        <ScoresDataView
+          categoryBreakdown={dashboard.categoryBreakdown}
+          stageFunnel={dashboard.stageFunnel}
+          topProblems={dashboard.topProblems}
+        />
+      ) : null}
     </main>
   );
 }

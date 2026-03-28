@@ -3,6 +3,7 @@
 import { Suspense, useState } from "react";
 import { usePathname, useSearchParams } from "next/navigation";
 import Link from "next/link";
+import { TrendingUp } from "lucide-react";
 import { AppTopBar, type StackProps } from "@/components/AppTopBar";
 import { FeedAutoLocation } from "@/components/FeedAutoLocation";
 import { FeedFiltersSheet } from "@/components/FeedFiltersSheet";
@@ -156,7 +157,7 @@ function DesktopLeftNav() {
         <NavL href="/trending" label="Trending" hot />
         <Link
           href="/problems/new"
-          className="mt-2 rounded-xl bg-[var(--kasa-gold)] py-3 text-center text-sm font-bold text-[var(--kasa-gold-on)] shadow-[var(--kasa-shadow-2)]"
+          className="mt-2 rounded-xl bg-[var(--kasa-accent)] py-3 text-center text-sm font-bold text-white shadow-[var(--kasa-shadow-2)]"
         >
           Report
         </Link>
@@ -179,9 +180,11 @@ function NavL({
   return (
     <Link
       href={href}
-      className="rounded-xl px-3 py-2 text-sm font-semibold text-[var(--kasa-text-primary)] hover:bg-[var(--kasa-muted-bg)]"
+      className="flex items-center gap-2 rounded-xl px-3 py-2 text-sm font-semibold text-[var(--kasa-text-primary)] hover:bg-[var(--kasa-muted-bg)]"
     >
-      {hot ? <span className="text-[var(--kasa-trending)]">🔥</span> : null}{" "}
+      {hot ? (
+        <TrendingUp size={14} strokeWidth={2} className="text-[var(--kasa-accent-soft)]" />
+      ) : null}
       {label}
     </Link>
   );
@@ -191,15 +194,15 @@ function DesktopRightAside() {
   return (
     <aside className="sticky top-20 hidden w-72 shrink-0 self-start xl:block">
       <div className="rounded-2xl border border-[var(--kasa-divider)] bg-[var(--kasa-card)] p-4 shadow-[var(--kasa-shadow-1)]">
-        <p className="text-xs font-bold uppercase tracking-wide text-[var(--kasa-trending)]">
-          Right now
+        <p className="text-xs font-bold uppercase tracking-wide text-[var(--kasa-accent-soft)]">
+          Trending
         </p>
         <p className="mt-2 text-sm text-[var(--kasa-text-secondary)]">
-          Open trending for rising categories and the loudest reports.
+          Rising categories and the loudest reports.
         </p>
         <Link
           href="/trending"
-          className="mt-3 inline-block text-sm font-bold text-[var(--kasa-forest)] hover:underline"
+          className="mt-3 inline-block text-sm font-bold text-[var(--kasa-accent)] hover:underline"
         >
           See trending →
         </Link>
@@ -210,7 +213,7 @@ function DesktopRightAside() {
         </p>
         <Link
           href="/scores"
-          className="mt-2 inline-block text-sm font-semibold text-[var(--kasa-forest)] hover:underline"
+          className="mt-2 inline-block text-sm font-semibold text-[var(--kasa-accent)] hover:underline"
         >
           Accountability scores →
         </Link>

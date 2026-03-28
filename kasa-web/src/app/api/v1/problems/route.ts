@@ -1,6 +1,8 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
+import { getProblemProgressMap } from "@/server/problem-progress";
 import {
+  buildSeverityMapForRows,
   listProblemsForFeed,
   createProblemFromFormData,
   parseFeedSort,
@@ -29,9 +31,16 @@ export async function GET(req: Request) {
     region: region ?? undefined,
     take: Number.isFinite(take) ? take : 50,
   });
+  const progressMap = await getProblemProgressMap(
+    rows.map((row) => ({
+      id: row.id,
+      status: row.status,
+    })),
+  );
+  const severityMap = buildSeverityMapForRows(rows, progressMap);
 
   return NextResponse.json({
-    data: rows.map(problemToJson),
+    data: rows.map((row) => problemToJson(row, severityMap[row.id])),
     meta: { sort, count: rows.length },
   });
 }

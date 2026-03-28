@@ -4,7 +4,6 @@ import { prisma } from "@/lib/prisma";
 import { getSessionId } from "@/lib/session";
 import {
   daysOpenSince,
-  demoSeverityScore,
   severityStyle,
 } from "@/lib/civic-metrics";
 import { formatRelativeTime } from "@/lib/format-relative-time";
@@ -15,7 +14,10 @@ import { ProblemProgressTimeline } from "@/components/ProblemProgressTimeline";
 import { ShareProblemButton } from "@/components/ShareProblemButton";
 import { UpvoteControl } from "@/components/UpvoteControl";
 import { getProblemProgress } from "@/server/problem-progress";
-import { getProblemById } from "@/server/problem-service";
+import {
+  getProblemById,
+  getProblemSeveritySnapshot,
+} from "@/server/problem-service";
 
 export const dynamic = "force-dynamic";
 
@@ -36,13 +38,9 @@ export default async function ProblemDetailPage({
       })
     : null;
 
-  const severity = demoSeverityScore({
-    createdAt: problem.createdAt,
-    status: problem.status,
-    upvoteCount: problem._count.upvotes,
-  });
-  const severityCopy = severityStyle(severity);
   const progress = await getProblemProgress(problem.id, problem.status);
+  const severitySnapshot = await getProblemSeveritySnapshot(problem, progress.stage);
+  const severityCopy = severityStyle(severitySnapshot.severityScore);
   const createdAtLabel = formatRelativeTime(problem.createdAt.toISOString());
 
   return (
@@ -54,7 +52,7 @@ export default async function ProblemDetailPage({
         region={problem.region}
         createdAtLabel={createdAtLabel}
         status={problem.status}
-        severity={severity}
+        severity={severitySnapshot.severityScore}
         severityClassName={`${severityCopy.bg} ${severityCopy.text} ${
           severityCopy.pulse ? "animate-pulse" : ""
         }`}

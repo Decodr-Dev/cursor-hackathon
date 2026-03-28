@@ -8,8 +8,8 @@ import type { FeedSort } from "@/server/problem-service";
 const SORT_TABS: { id: FeedSort; label: string }[] = [
   { id: "for_you", label: "For you" },
   { id: "latest", label: "Latest" },
-  { id: "most_upvoted", label: "Most upvoted" },
-  { id: "most_severe", label: "Most severe" },
+  { id: "most_upvoted", label: "Top" },
+  { id: "most_severe", label: "Severe" },
 ];
 
 export function FeedSortTabs({ state }: { state: FeedSearchState }) {
@@ -31,7 +31,7 @@ export function FeedSortTabs({ state }: { state: FeedSearchState }) {
             aria-selected={on}
             className={`shrink-0 rounded-full px-3.5 py-2 text-xs font-semibold sm:text-sm ${
               on
-                ? "bg-[var(--kasa-gold)] text-[var(--kasa-gold-on)] shadow-[var(--kasa-shadow-1)]"
+                ? "bg-[var(--kasa-accent)] text-white shadow-[var(--kasa-shadow-1)]"
                 : "text-[var(--kasa-text-secondary)] hover:bg-[var(--kasa-muted-bg)]"
             }`}
           >
@@ -61,7 +61,7 @@ export function FeedStatusChips({ state }: { state: FeedSearchState }) {
             href={href}
             className={`rounded-full px-3 py-1.5 text-xs font-semibold ${
               on
-                ? "bg-[var(--kasa-forest)] text-white shadow-[var(--kasa-shadow-1)]"
+                ? "bg-[var(--kasa-accent)] text-white shadow-[var(--kasa-shadow-1)]"
                 : "bg-[var(--kasa-card)] text-[var(--kasa-text-secondary)] ring-1 ring-[var(--kasa-divider)]"
             }`}
           >
@@ -84,7 +84,7 @@ export function FeedCategoryChips({ state }: { state: FeedSearchState }) {
         href={feedPathHref(clearCat)}
         className={`shrink-0 rounded-full px-3 py-2 text-xs font-semibold sm:text-sm ${
           !state.category
-            ? "bg-[var(--kasa-gold-light)] text-[var(--kasa-text-primary)] ring-1 ring-[var(--kasa-gold)]/40"
+            ? "bg-[var(--kasa-accent-wash)] text-[var(--kasa-text-primary)] ring-1 ring-[var(--kasa-accent)]/40"
             : "bg-[var(--kasa-card)] text-[var(--kasa-text-secondary)] ring-1 ring-[var(--kasa-divider)]"
         }`}
       >
@@ -100,11 +100,11 @@ export function FeedCategoryChips({ state }: { state: FeedSearchState }) {
             href={href}
             className={`max-w-[11rem] shrink-0 truncate rounded-full px-3 py-2 text-xs font-semibold sm:text-sm ${
               on
-                ? "bg-[var(--kasa-gold-light)] text-[var(--kasa-text-primary)] ring-1 ring-[var(--kasa-gold)]/40"
+                ? "bg-[var(--kasa-accent-wash)] text-[var(--kasa-text-primary)] ring-1 ring-[var(--kasa-accent)]/40"
                 : "bg-[var(--kasa-card)] text-[var(--kasa-text-secondary)] ring-1 ring-[var(--kasa-divider)]"
             }`}
           >
-            {c.emoji} {c.label}
+            {c.label}
           </Link>
         );
       })}

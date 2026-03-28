@@ -1,15 +1,16 @@
 @import "tailwindcss";
 
-/* Kasa - black, white, and green */
+/* Kasa — black, white, blue */
 :root {
-  /* Shared accent */
-  --kasa-accent: #22c55e;
-  --kasa-accent-strong: #15803d;
-  --kasa-accent-soft: #86efac;
-  --kasa-accent-wash: #0f1f17;
-  --kasa-accent-on: #07110b;
+  /* Accent */
+  --kasa-accent: #3b82f6;
+  --kasa-accent-strong: #2563eb;
+  --kasa-accent-soft: #93c5fd;
+  --kasa-accent-wash: #0f172a;
+  --kasa-accent-on: #ffffff;
+  --kasa-success: #22c55e;
 
-  /* Compatibility aliases for existing components */
+  /* Compatibility aliases */
   --kasa-blue: var(--kasa-accent);
   --kasa-blue-dim: var(--kasa-accent-strong);
   --kasa-blue-on: #ffffff;
@@ -21,25 +22,25 @@
   --kasa-gold-on: var(--kasa-accent-on);
 
   /* Severity */
-  --kasa-severity-low: #163320;
-  --kasa-severity-low-text: #dcfce7;
-  --kasa-severity-medium: #14532d;
-  --kasa-severity-medium-text: #dcfce7;
-  --kasa-severity-high: #16a34a;
-  --kasa-severity-high-text: #f7fee7;
-  --kasa-severity-critical: #22c55e;
-  --kasa-severity-critical-text: #041108;
+  --kasa-severity-low: #1a1a1a;
+  --kasa-severity-low-text: #737373;
+  --kasa-severity-medium: #0f172a;
+  --kasa-severity-medium-text: #93c5fd;
+  --kasa-severity-high: #1e3a5f;
+  --kasa-severity-high-text: #bfdbfe;
+  --kasa-severity-critical: #2563eb;
+  --kasa-severity-critical-text: #ffffff;
 
   /* Surfaces */
-  --kasa-bg: #080808;
-  --kasa-card: #111111;
-  --kasa-muted-bg: #1c1c1c;
-  --kasa-divider: #242424;
+  --kasa-bg: #000000;
+  --kasa-card: #0a0a0a;
+  --kasa-muted-bg: #141414;
+  --kasa-divider: #1f1f1f;
 
   /* Typography */
-  --kasa-text-primary: #f2f2f2;
-  --kasa-text-secondary: #9ca3af;
-  --kasa-text-muted: #6b7280;
+  --kasa-text-primary: #f5f5f5;
+  --kasa-text-secondary: #a3a3a3;
+  --kasa-text-muted: #525252;
   --kasa-text-on-dark: #ffffff;
 
   /* Shell */
@@ -47,9 +48,9 @@
   --kasa-trending: var(--kasa-accent-soft);
 
   /* Elevation */
-  --kasa-shadow-1: 0 1px 3px rgba(0, 0, 0, 0.5);
-  --kasa-shadow-2: 0 4px 12px rgba(0, 0, 0, 0.6);
-  --kasa-shadow-3: 0 8px 24px rgba(0, 0, 0, 0.7);
+  --kasa-shadow-1: 0 1px 3px rgba(0, 0, 0, 0.6);
+  --kasa-shadow-2: 0 4px 12px rgba(0, 0, 0, 0.7);
+  --kasa-shadow-3: 0 8px 24px rgba(0, 0, 0, 0.8);
 
   --background: var(--kasa-bg);
   --foreground: var(--kasa-text-primary);

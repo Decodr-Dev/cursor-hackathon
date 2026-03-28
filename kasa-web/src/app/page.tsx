@@ -6,6 +6,7 @@ import type { FeedSearchState } from "@/lib/feed-url";
 import type { ReactNode } from "react";
 import { getProblemProgressMap } from "@/server/problem-progress";
 import {
+  buildSeverityMapForRows,
   listProblemsForFeed,
   parseFeedSort,
 } from "@/server/problem-service";
@@ -61,6 +62,7 @@ export default async function Home({
       status: problem.status,
     })),
   );
+  const severityMap = buildSeverityMapForRows(problems, progressMap);
 
   const feedNodes: ReactNode[] = [];
   problems.forEach((p, i) => {
@@ -69,6 +71,7 @@ export default async function Home({
         key={p.id}
         problem={p}
         progressStage={progressMap[p.id].stage}
+        severity={severityMap[p.id]?.severityScore ?? 0}
       />,
     );
     if ((i + 1) % 5 === 0) {

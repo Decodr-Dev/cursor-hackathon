@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { Bell, SlidersHorizontal, ChevronLeft, MapPin, ChevronDown } from "lucide-react";
 import { ShareProblemButton } from "@/components/ShareProblemButton";
 
 type FeedProps = {
@@ -37,12 +38,11 @@ export function AppTopBar(props: Props) {
             <button
               type="button"
               onClick={props.onLocationClick}
-              className="inline-flex max-w-full items-center gap-1 rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold backdrop-blur-sm hover:bg-white/15"
+              className="inline-flex max-w-full items-center gap-1.5 rounded-full bg-white/10 px-3 py-1.5 text-xs font-semibold backdrop-blur-sm hover:bg-white/15"
             >
-              <span className="truncate">Location: {props.locationLabel}</span>
-              <span className="text-[10px] opacity-80" aria-hidden>
-                ▼
-              </span>
+              <MapPin size={11} strokeWidth={2} className="shrink-0 opacity-70" />
+              <span className="truncate">{props.locationLabel}</span>
+              <ChevronDown size={11} strokeWidth={2} className="shrink-0 opacity-70" />
             </button>
           </div>
           <div className="flex shrink-0 items-center gap-1">
@@ -52,7 +52,7 @@ export function AppTopBar(props: Props) {
               className="flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/10"
               aria-label="Open filters"
             >
-              <FilterIcon />
+              <SlidersHorizontal size={18} strokeWidth={1.7} />
             </button>
             <button
               type="button"
@@ -60,9 +60,9 @@ export function AppTopBar(props: Props) {
               className="relative flex h-9 w-9 items-center justify-center rounded-full hover:bg-white/10"
               aria-label="Open notifications"
             >
-              <BellIcon />
+              <Bell size={18} strokeWidth={1.7} />
               {(props.notifyCount ?? 0) > 0 ? (
-                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--kasa-forest)] px-1 text-[10px] font-bold text-[var(--kasa-gold-on)]">
+                <span className="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-[var(--kasa-accent)] px-1 text-[10px] font-bold text-white">
                   {props.notifyCount! > 9 ? "9+" : props.notifyCount}
                 </span>
               ) : null}
@@ -81,7 +81,7 @@ export function AppTopBar(props: Props) {
           className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full hover:bg-white/10"
           aria-label="Back"
         >
-          <BackIcon />
+          <ChevronLeft size={22} strokeWidth={2} />
         </Link>
         <h1 className="min-w-0 flex-1 truncate text-center text-sm font-bold">
           {props.title}
@@ -92,52 +92,12 @@ export function AppTopBar(props: Props) {
               <ShareProblemButton path={props.sharePath} title={props.shareTitle} />
             </span>
           ) : (
-            <span className="opacity-40">
-              <BellIcon />
+            <span className="pointer-events-none opacity-0">
+              <Bell size={18} />
             </span>
           )}
         </div>
       </div>
     </header>
-  );
-}
-
-function BellIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path
-        d="M12 22a2 2 0 002-2H10a2 2 0 002 2zm6-6V11a6 6 0 10-12 0v5l-2 2v1h16v-1l-2-2z"
-        stroke="currentColor"
-        strokeWidth="1.7"
-        strokeLinejoin="round"
-      />
-    </svg>
-  );
-}
-
-function FilterIcon() {
-  return (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path
-        d="M4 7h16M7 12h10M10 17h4"
-        stroke="currentColor"
-        strokeWidth="1.9"
-        strokeLinecap="round"
-      />
-    </svg>
-  );
-}
-
-function BackIcon() {
-  return (
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden>
-      <path
-        d="M15 18l-6-6 6-6"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
   );
 }

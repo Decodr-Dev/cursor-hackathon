@@ -31,7 +31,7 @@ export const PROGRESS_STAGE_META: Record<
     shortLabel: "Review",
     description: "Nearby people are confirming the issue is real and current.",
     chipClassName:
-      "bg-white text-[var(--kasa-text-primary)] ring-1 ring-[var(--kasa-divider)]",
+      "bg-[var(--kasa-muted-bg)] text-[var(--kasa-text-secondary)] ring-1 ring-[var(--kasa-divider)]",
   },
   verified: {
     label: "Community verified",

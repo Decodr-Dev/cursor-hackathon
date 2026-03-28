@@ -1,32 +1,27 @@
 import { NextResponse } from "next/server";
 import { categoryLabel } from "@/lib/categories";
-import { demoSeverityScore } from "@/lib/civic-metrics";
 import { getTrendingSnapshot, problemToJson } from "@/server/problem-service";
 
 export async function GET() {
   const snap = await getTrendingSnapshot();
-  const ranked = snap.categories.map((c, i) => ({
-    rank: i + 1,
-    category: c.category,
-    label: categoryLabel(c.category),
-    reports: c._count.id,
-    severityDemo: Math.min(
-      99,
-      40 + Math.min(c._count.id * 3, 50) + (i === 0 ? 12 : 0),
-    ),
+  const ranked = snap.categories.map((category, index) => ({
+    rank: index + 1,
+    category: category.category,
+    label: categoryLabel(category.category),
+    reports: category.reports,
+    avgSeverity: category.avgSeverity,
+    trendScore: category.trendPulse,
   }));
   return NextResponse.json({
     rightNow: ranked.slice(0, 8),
     risingCategories: ranked.slice(0, 6),
-    mostUpvoted: snap.topVoices.map(problemToJson),
+    mostUpvoted: snap.topVoices.map((problem) =>
+      problemToJson(problem, snap.severityMap[problem.id]),
+    ),
     longestUnresolved: snap.longestOpen.map(({ problem: p, daysOpen }) => ({
-      ...problemToJson(p),
+      ...problemToJson(p, snap.severityMap[p.id]),
       daysOpen,
-      severityScore: demoSeverityScore({
-        createdAt: p.createdAt,
-        status: p.status,
-        upvoteCount: p._count.upvotes,
-      }),
+      severityScore: snap.severityMap[p.id]?.severityScore ?? 0,
     })),
   });
 }
