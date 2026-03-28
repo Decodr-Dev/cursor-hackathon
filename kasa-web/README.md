@@ -60,3 +60,4 @@ The footer and on-page notes remind viewers this is a **hackathon prototype**, n
 - `src/server/problem-service.ts` — backend logic (list, create, upvote, demo verify).
 - `src/app/api/v1/problems/` — HTTP API used by the browser (and ready for other clients).
 - `prisma/schema.prisma` — data model: problems, evidence files, upvotes.
+
