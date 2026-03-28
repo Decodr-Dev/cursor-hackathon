@@ -1,0 +1,51 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+enum ProblemStatus {
+  PENDING_VERIFICATION
+  COMMUNITY_VERIFIED
+}
+
+model Problem {
+  id          String        @id @default(cuid())
+  category    String
+  subcategory String?
+  region      String
+  district    String
+  description String
+  status      ProblemStatus @default(PENDING_VERIFICATION)
+  latitude    Float?
+  longitude   Float?
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  upvotes  Upvote[]
+  evidence Evidence[]
+}
+
+model Upvote {
+  id        String   @id @default(cuid())
+  problemId String
+  sessionId String
+  createdAt DateTime @default(now())
+
+  problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+
+  @@unique([problemId, sessionId])
+}
+
+model Evidence {
+  id        String   @id @default(cuid())
+  problemId String
+  type      String
+  fileUrl   String
+  createdAt DateTime @default(now())
+
+  problem Problem @relation(fields: [problemId], references: [id], onDelete: Cascade)
+}

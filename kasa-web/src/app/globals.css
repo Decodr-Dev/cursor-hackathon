@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+:root {
+  --kasa-ink: #14201a;
+  --kasa-muted: #4b5d54;
+  --kasa-surface: #f7f4ee;
+  --kasa-wash: #ece6db;
+  --kasa-border: #d6cfc3;
+  --kasa-forest: #1f5d46;
+  --kasa-gold: #c9a227;
+  --background: var(--kasa-surface);
+  --foreground: var(--kasa-ink);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans);
+  --font-display: var(--font-display);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --kasa-ink: #e8f0e9;
+    --kasa-muted: #9fb0a6;
+    --kasa-surface: #0f1613;
+    --kasa-wash: #1a2420;
+    --kasa-border: #2a3830;
+    --kasa-forest: #2f9f72;
+    --kasa-gold: #e3c66d;
+    --background: var(--kasa-surface);
+    --foreground: var(--kasa-ink);
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
