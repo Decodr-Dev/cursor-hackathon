@@ -1,11 +1,18 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
+import { READ_ONLY_DEMO_MESSAGE, isReadOnlyDemo } from "@/lib/demo-mode";
 import { demoMarkProblemVerified } from "@/server/problem-service";
 
 export async function POST(
   _req: Request,
   ctx: { params: Promise<{ id: string }> },
 ) {
+  if (isReadOnlyDemo()) {
+    return NextResponse.json(
+      { error: READ_ONLY_DEMO_MESSAGE },
+      { status: 403 },
+    );
+  }
   const { id } = await ctx.params;
   const result = await demoMarkProblemVerified(id);
   if (!result.ok) {

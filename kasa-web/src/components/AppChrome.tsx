@@ -7,6 +7,7 @@ import { AppTopBar, type StackProps } from "@/components/AppTopBar";
 import { FeedAutoLocation } from "@/components/FeedAutoLocation";
 import { LocationSheet } from "@/components/LocationSheet";
 import { MobileDock } from "@/components/MobileDock";
+import { READ_ONLY_DEMO_MESSAGE } from "@/lib/demo-mode";
 import { locationLabelForFeed } from "@/lib/location";
 
 function stackBarFor(pathname: string): StackProps | null {
@@ -31,16 +32,28 @@ function stackBarFor(pathname: string): StackProps | null {
   if (pathname.startsWith("/problems/new")) {
     return { variant: "stack", title: "Report", backHref: "/" };
   }
+  if (pathname.startsWith("/login")) {
+    return { variant: "stack", title: "Log in", backHref: "/" };
+  }
+  if (pathname.startsWith("/signup")) {
+    return { variant: "stack", title: "Sign up", backHref: "/" };
+  }
   return null;
 }
 
+function isAuthRoute(pathname: string) {
+  return pathname.startsWith("/login") || pathname.startsWith("/signup");
+}
+
 function ChromeInner({ children }: { children: React.ReactNode }) {
+  const readOnlyDemo = process.env.NEXT_PUBLIC_KASA_READ_ONLY === "1";
   const pathname = usePathname();
   const searchParams = useSearchParams();
   const [locOpen, setLocOpen] = useState(false);
   const district = searchParams.get("district")?.trim() ?? "";
   const region = searchParams.get("region")?.trim() ?? "";
   const locationLabel = locationLabelForFeed({ district, region });
+  const authRoute = isAuthRoute(pathname);
 
   const stack = pathname === "/" ? null : stackBarFor(pathname);
 
@@ -57,15 +70,34 @@ function ChromeInner({ children }: { children: React.ReactNode }) {
           notifyCount={0}
         />
       )}
-      <LocationSheet open={locOpen} onClose={() => setLocOpen(false)} />
-      <div className="mx-auto flex w-full max-w-6xl flex-1 gap-0 lg:gap-8 lg:px-6">
-        <DesktopLeftNav />
-        <div className="min-w-0 flex-1 pb-24 lg:max-w-[600px] lg:pb-10">
+      {!authRoute ? (
+        <LocationSheet open={locOpen} onClose={() => setLocOpen(false)} />
+      ) : null}
+      {readOnlyDemo ? (
+        <div className="border-b border-[var(--kasa-divider)] bg-[var(--kasa-gold-light)]/85 px-3 py-2 text-center text-xs font-medium text-[var(--kasa-gold-on)]">
+          {READ_ONLY_DEMO_MESSAGE}
+        </div>
+      ) : null}
+      <div
+        className={
+          authRoute
+            ? "mx-auto flex w-full max-w-xl flex-1 px-3 lg:px-6"
+            : "mx-auto flex w-full max-w-6xl flex-1 gap-0 lg:gap-8 lg:px-6"
+        }
+      >
+        {!authRoute ? <DesktopLeftNav /> : null}
+        <div
+          className={
+            authRoute
+              ? "min-w-0 flex-1 pb-10"
+              : "min-w-0 flex-1 pb-24 lg:max-w-[600px] lg:pb-10"
+          }
+        >
           {children}
         </div>
-        <DesktopRightAside />
+        {!authRoute ? <DesktopRightAside /> : null}
       </div>
-      <MobileDock />
+      {!authRoute ? <MobileDock /> : null}
     </div>
   );
 }

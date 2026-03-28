@@ -6,6 +6,7 @@ import {
   parseFeedSort,
   problemToJson,
 } from "@/server/problem-service";
+import { READ_ONLY_DEMO_MESSAGE, isReadOnlyDemo } from "@/lib/demo-mode";
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url);
@@ -36,6 +37,12 @@ export async function GET(req: Request) {
 }
 
 export async function POST(req: Request) {
+  if (isReadOnlyDemo()) {
+    return NextResponse.json(
+      { error: READ_ONLY_DEMO_MESSAGE },
+      { status: 403 },
+    );
+  }
   const formData = await req.formData();
   const result = await createProblemFromFormData(formData);
   if (!result.ok) {

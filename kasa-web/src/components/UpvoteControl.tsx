@@ -2,6 +2,7 @@
 
 import { useTransition } from "react";
 import { useRouter } from "next/navigation";
+import { READ_ONLY_DEMO_MESSAGE } from "@/lib/demo-mode";
 
 type Props = {
   problemId: string;
@@ -10,6 +11,7 @@ type Props = {
 };
 
 export function UpvoteControl({ problemId, count, hasUpvoted }: Props) {
+  const readOnlyDemo = process.env.NEXT_PUBLIC_KASA_READ_ONLY === "1";
   const router = useRouter();
   const [pending, start] = useTransition();
 
@@ -19,7 +21,15 @@ export function UpvoteControl({ problemId, count, hasUpvoted }: Props) {
         <span className="font-semibold text-[var(--kasa-ink)]">{count}</span>{" "}
         {count === 1 ? "voice" : "voices"}
       </div>
-      {!hasUpvoted ? (
+      {readOnlyDemo ? (
+        <button
+          type="button"
+          disabled
+          className="rounded-full border border-[var(--kasa-border)] bg-[var(--kasa-wash)] px-4 py-2 text-sm font-medium text-[var(--kasa-ink)] opacity-70"
+        >
+          Voting disabled on public demo
+        </button>
+      ) : !hasUpvoted ? (
         <button
           type="button"
           disabled={pending}
@@ -59,8 +69,9 @@ export function UpvoteControl({ problemId, count, hasUpvoted }: Props) {
         </button>
       )}
       <p className="w-full text-xs text-[var(--kasa-muted)]">
-        Demo: one vote per report on this browser (cookie), until real sign-in
-        ships.
+        {readOnlyDemo
+          ? READ_ONLY_DEMO_MESSAGE
+          : "Demo: one vote per report on this browser (cookie), until real sign-in ships."}
       </p>
     </div>
   );

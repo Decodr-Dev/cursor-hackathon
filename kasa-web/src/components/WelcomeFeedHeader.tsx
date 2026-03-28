@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { isReadOnlyDemo } from "@/lib/demo-mode";
 import { getPublicFeedStats } from "@/server/problem-service";
 import { locationLabelForFeed } from "@/lib/location";
 
@@ -6,6 +7,7 @@ export async function WelcomeFeedHeader(props: {
   district?: string;
   region?: string;
 }) {
+  const readOnlyDemo = isReadOnlyDemo();
   const stats = await getPublicFeedStats(props);
   const label = locationLabelForFeed(props);
   const localMode = !!props.district || !!props.region;
@@ -38,7 +40,7 @@ export async function WelcomeFeedHeader(props: {
           href="/problems/new"
           className="rounded-xl bg-[var(--kasa-gold)] px-4 py-3 text-center text-base font-semibold text-[var(--kasa-gold-on)] shadow-[var(--kasa-shadow-2)]"
         >
-          Join Kasa — report a problem
+          {readOnlyDemo ? "Preview the report flow" : "Join Kasa — report a problem"}
         </Link>
         <Link
           href="/scores"

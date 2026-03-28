@@ -1,7 +1,12 @@
 "use client";
 
 import { useEffect } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import {
+  type ReadonlyURLSearchParams,
+  usePathname,
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
 import {
   FEED_AUTO_LOCATION_ATTEMPT_KEY,
   FEED_LOCATION_STORAGE_KEY,

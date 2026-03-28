@@ -47,3 +47,5 @@ next-env.d.ts
 # hackathon demo uploads (keep folder)
 /public/uploads/*
 !/public/uploads/.gitkeep
+
+.vercel
